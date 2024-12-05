@@ -585,11 +585,21 @@ Unless required by applicable law or agreed to in writing, software distributed 
                 <artifactId>spring-boot-starter-data-mongodb</artifactId>
                 <version>${spring.boot.version}</version>
             </dependency>
-            <!-- easy-es -->
+            <!-- elasticsearch -->
             <dependency>
                 <groupId>org.dromara.easy-es</groupId>
                 <artifactId>easy-es-boot-starter</artifactId>
-                <version>2.0.0-cm</version>
+                <version>2.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.elasticsearch</groupId>
+                <artifactId>elasticsearch</artifactId>
+                <version>7.14.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.elasticsearch.client</groupId>
+                <artifactId>elasticsearch-rest-high-level-client</artifactId>
+                <version>7.14.0</version>
             </dependency>
             <!-- flowable -->
             <dependency>

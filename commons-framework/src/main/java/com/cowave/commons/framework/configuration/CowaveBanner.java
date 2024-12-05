@@ -9,6 +9,7 @@
  */
 package com.cowave.commons.framework.configuration;
 
+import cn.hutool.system.*;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
@@ -24,16 +25,14 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
 /**
- *
  * @author shanhuiming
- *
  */
 @Slf4j
 public class CowaveBanner implements Banner {
 
     @Override
     public void printBanner(Environment environment, Class<?> sourceClass, PrintStream out) {
-        String info = ":: Spring Boot 2.7.0 :: ";
+        String appInfo = ":: Spring Boot 2.7.0";
         Resource resource = new DefaultResourceLoader().getResource("classpath:META-INF/git.info");
         if (resource.exists()) {
             try (InputStream input = resource.getInputStream()) {
@@ -43,25 +42,47 @@ public class CowaveBanner implements Banner {
                 String buildTime = (String) json.get("build.time");
                 String gitId = (String) json.get("git.commit.id");
                 String gitBranch = (String) json.get("git.branch");
-                if(StringUtils.isNotBlank(appName) && StringUtils.isNotBlank(gitBranch)){
-                    info = info + appName + " " + appVersion + " :: build(" + buildTime + " " + gitBranch + " " + gitId + ")";
-                }else if(StringUtils.isNotBlank(appName)){
-                    info = info + appName + " " + appVersion + " :: build(" + buildTime + ")";
-                }else if(StringUtils.isNotBlank(gitBranch)){
-                    info = info + "build(" + gitBranch + " " + gitId + ")";
+                if (StringUtils.isNotBlank(appName) && StringUtils.isNotBlank(gitBranch)) {
+                    appInfo = appInfo + " :: " + appName + " " + appVersion + " :: build(" + buildTime + " " + gitBranch + " " + gitId + ") ";
+                } else if (StringUtils.isNotBlank(appName)) {
+                    appInfo = appInfo + " :: " + appName + " " + appVersion + " :: build(" + buildTime + ") ";
+                } else if (StringUtils.isNotBlank(gitBranch)) {
+                    appInfo = appInfo + " :: " + "build(" + gitBranch + " " + gitId + ") ";
                 }
-            }catch(Exception e){
+            } catch (Exception e) {
                 log.error("", e);
             }
         }
-        out.println("  ______    ______  ____    __    ____  ___   ____    ____  _______");
-        out.println(" /      |  /  __  \\ \\   \\  /  \\  /   / /   \\  \\   \\  /   / |   ____|");
-        out.println("|  .----  |  |  |  | \\   \\/    \\/   / /  ^  \\  \\   \\/   /  |  |__");
-        out.println("|  |      |  |  |  |  \\            / /  /_\\  \\  \\      /   |   __|");
-        out.println("|  `----  |  `--'  |   \\    /\\    / /  _____  \\  \\    /    |  |____");
-        out.println(" \\______|  \\______/     \\__/  \\__/ /__/     \\__\\  \\__/     |_______|");
-        if(StringUtils.isNotBlank(info)){
-            out.println(info);
-        }
+
+        OsInfo osInfo = SystemUtil.getOsInfo();
+        HostInfo hostInfo = SystemUtil.getHostInfo();
+        UserInfo userInfo = SystemUtil.getUserInfo();
+        String userName = SystemUtil.get("user.name", false);
+        JvmInfo jvmInfo = SystemUtil.getJvmInfo();
+        JvmSpecInfo jvmSpecInfo = SystemUtil.getJvmSpecInfo();
+        JavaInfo javaInfo = SystemUtil.getJavaInfo();
+        JavaSpecInfo javaSpecInfo = SystemUtil.getJavaSpecInfo();
+        JavaRuntimeInfo runtimeInfo = SystemUtil.getJavaRuntimeInfo();
+        String bannerStr = "  ______    ______  ____    __    ____  ___   ____    ____  _______\n" +
+                " /      |  /  __  \\ \\   \\  /  \\  /   / /   \\  \\   \\  /   / |   ____|\n" +
+                "|  .----  |  |  |  | \\   \\/    \\/   / /  ^  \\  \\   \\/   /  |  |__\n" +
+                "|  |      |  |  |  |  \\            / /  /_\\  \\  \\      /   |   __|\n" +
+                "|  `----  |  `--'  |   \\    /\\    / /  _____  \\  \\    /    |  |____\n" +
+                " \\______|  \\______/     \\__/  \\__/ /__/     \\__\\  \\__/     |_______|\n" +
+                appInfo + "\n" +
+                ":: OS arch=" + osInfo.getArch() + " name=" + osInfo.getName() + " version=" + osInfo.getVersion() +
+                " :: Host name=" + hostInfo.getName() + " addr=" + hostInfo.getAddress() +
+                " :: User name=" + userName + " lang=" + userInfo.getLanguage() + "-" + userInfo.getCountry() + "\n" +
+
+                ":: JVM " + jvmInfo.getName() + "(" + jvmInfo.getVersion() + " " + jvmInfo.getInfo() + ")" + " " + jvmInfo.getVendor() +
+                " :: Spec " + jvmSpecInfo.getName() + " " + jvmSpecInfo.getVersion() + " " + jvmSpecInfo.getVendor() + "\n" +
+
+                ":: Java " + javaInfo.getVersion() + " " + javaInfo.getVendor() + "(" + javaInfo.getVendorURL() + ")" +
+                " :: Spec " + javaSpecInfo.getName() + " " + javaSpecInfo.getVersion() + " " + javaSpecInfo.getVendor() + "\n" +
+
+                ":: Java Runtime " + runtimeInfo.getName() + " " + runtimeInfo.getVersion() +
+                " :: Class " + runtimeInfo.getClassVersion() + " :: Home " + runtimeInfo.getHomeDir() + "\n" +
+                ":: Java Library: " + runtimeInfo.getLibraryPath();
+        out.println(bannerStr);
     }
 }

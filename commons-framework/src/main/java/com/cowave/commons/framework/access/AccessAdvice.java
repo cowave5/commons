@@ -18,6 +18,7 @@ import com.cowave.commons.response.exception.AssertsException;
 import com.cowave.commons.response.exception.HttpHintException;
 import com.cowave.commons.response.exception.HttpException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
@@ -33,7 +34,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import javax.annotation.Nullable;
 import javax.validation.ConstraintViolationException;
 import java.beans.PropertyEditorSupport;
 import java.sql.SQLException;
@@ -63,8 +63,7 @@ public class AccessAdvice {
 
     private final AccessProperties accessProperties;
 
-    @Nullable
-    private final AccessExceptionHandler accessExceptionHandler;
+    private final ObjectProvider<AccessExceptionHandler> exceptionHandlerProvider;
 
     /**
      * 参数转换
@@ -219,8 +218,9 @@ public class AccessAdvice {
             // 响应日志
             accessLogger.logResponse(httpResponse);
             // 自定义处理，比如告警
-            if (accessExceptionHandler != null) {
-                accessExceptionHandler.handler(e, httpStatus, response);
+            AccessExceptionHandler exceptionHandler = exceptionHandlerProvider.getIfAvailable();
+            if (exceptionHandler != null) {
+                exceptionHandler.handler(e, httpStatus, response);
             }
         } catch (Exception ex) {
             AccessLogger.error("", ex);
