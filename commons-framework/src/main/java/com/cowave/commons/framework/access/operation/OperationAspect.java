@@ -14,11 +14,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.expression.EvaluationContext;
@@ -81,7 +83,7 @@ public class OperationAspect {
         if (specifyHandle) {
             handleOperation(operation, context);
         } else {
-            defaultHandle(operationInfo, argMap, resp, null);
+            defaultHandle(joinPoint, operation, operationInfo, argMap, resp, null);
         }
     }
 
@@ -101,18 +103,50 @@ public class OperationAspect {
         if (specifyHandle) {
             handleOperation(operation, context);
         } else {
-            defaultHandle(operationInfo, argMap, null, e);
+            defaultHandle(joinPoint, operation, operationInfo, argMap, null, e);
         }
     }
 
-    public void defaultHandle(OperationInfo operationInfo, Map<String, Object> argMap, Object resp, Exception e){
-        OperationHandler operationHandler;
-        try{
-            operationHandler = applicationContext.getBean(OperationHandler.class);
-        }catch (Exception ex){
-            throw new RuntimeException("Neither 'handleExpr' is specified nor 'OperationHandler' is implemented");
+    private void handleOperation(Operation operation, EvaluationContext context){
+        if(operation.isAsync() && taskExecutor != null){
+            taskExecutor.execute(() -> exprParser.parseExpression(operation.handleExpr()).getValue(context));
+        }else{
+            if(operation.isAsync()){
+                log.warn("No TaskExecutor found, recording operation log synchronously");
+            }
+            try{
+                exprParser.parseExpression(operation.handleExpr()).getValue(context);
+            }catch (Exception ex){
+                log.error("", ex);
+            }
         }
-        operationHandler.handle(operationInfo, argMap, resp, e);
+    }
+
+    public void defaultHandle(JoinPoint joinPoint, Operation operation, OperationInfo operationInfo, Map<String, Object> argMap, Object resp, Exception e){
+        OperationHandler operationHandler;
+        try {
+            operationHandler = applicationContext.getBean(OperationHandler.class);
+        } catch (NoSuchBeanDefinitionException ex) {
+            Signature signature = joinPoint.getSignature();
+            String className = signature.getDeclaringType().getSimpleName();
+            String methodName = signature.getName();
+            log.error("failed to record operation log of " + className + "." + methodName
+                    + ", neither 'handleExpr' is specified nor 'OperationHandler' is implemented");
+            return;
+        }
+
+        if(operation.isAsync() && taskExecutor != null){
+            taskExecutor.execute(() -> operationHandler.handle(operationInfo, argMap, resp, e));
+        }else{
+            if(operation.isAsync()){
+                log.warn("No TaskExecutor found, recording operation log synchronously");
+            }
+            try{
+                operationHandler.handle(operationInfo, argMap, resp, e);
+            }catch (Exception ex){
+                log.error("", ex);
+            }
+        }
     }
 
     private boolean prepareOperation(JoinPoint joinPoint, Operation operation,
@@ -192,18 +226,6 @@ public class OperationAspect {
         }catch(Exception e){
             log.error("", e);
             return "";
-        }
-    }
-
-    private void handleOperation(Operation operation, EvaluationContext context){
-        if(operation.isAsync() && taskExecutor != null){
-            taskExecutor.execute(() -> exprParser.parseExpression(operation.handleExpr()).getValue(context));
-        }else{
-            try{
-                exprParser.parseExpression(operation.handleExpr()).getValue(context);
-            }catch (Exception ex){
-                log.error("", ex);
-            }
         }
     }
 }
