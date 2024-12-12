@@ -746,7 +746,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
             <dependency>
                 <groupId>cn.hutool</groupId>
                 <artifactId>hutool-all</artifactId>
-                <version>5.8.21</version>
+                <version>5.7.22</version>
             </dependency>
             <!-- jwt -->
             <dependency>

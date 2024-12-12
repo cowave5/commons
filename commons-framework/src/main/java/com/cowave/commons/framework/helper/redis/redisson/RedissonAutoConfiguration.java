@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.context.properties.bind.Binder;
@@ -53,6 +54,7 @@ import java.util.List;
 @EnableConfigurationProperties({RedisProperties.class, RedissonProperties.class})
 public class RedissonAutoConfiguration {
 
+    @ConditionalOnMissingBean(RedissonClient.class)
     @Primary
     @Bean(destroyMethod = "shutdown")
     public RedissonClient redissonClient(ApplicationContext ctx, RedisProperties redisProperties, RedissonProperties redissonProperties,
@@ -61,6 +63,7 @@ public class RedissonAutoConfiguration {
         return new CheckedRedissonClient(ctx, redisProperties, redissonProperties, redissonAutoConfigurationCustomizers, exitOnConnectionFailed);
     }
 
+    @ConditionalOnMissingBean(RedissonReactiveClient.class)
     @Primary
     @Lazy
     @Bean
@@ -68,6 +71,7 @@ public class RedissonAutoConfiguration {
         return redissonClient.reactive();
     }
 
+    @ConditionalOnMissingBean(RedissonRxClient.class)
     @Primary
     @Lazy
     @Bean

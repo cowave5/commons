@@ -9,6 +9,7 @@
  */
 package com.cowave.commons.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -25,31 +26,37 @@ import static com.cowave.commons.response.HttpResponseCode.INTERNAL_SERVER_ERROR
 import static com.cowave.commons.response.HttpResponseCode.SUCCESS;
 
 /**
- *
  * @author shanhuiming
- *
  */
 @Slf4j
 @Data
 public class Response<T> {
 
-    /** 响应数据 */
+    /**
+     * 响应数据
+     */
     private T data;
 
-    /** 响应码 */
+    /**
+     * 响应码
+     */
     private String code;
 
-    /** 响应描述 */
+    /**
+     * 响应描述
+     */
     private String msg;
 
-    /** 错误堆栈信息 */
+    /**
+     * 错误堆栈信息
+     */
     private List<String> cause;
 
-    public Response(){
+    public Response() {
 
     }
 
-    public Response(String code, String msg, T data){
+    public Response(String code, String msg, T data) {
         this.code = code;
         this.msg = msg;
         this.data = data;
@@ -63,71 +70,71 @@ public class Response<T> {
     /**
      * status=200, code=#{responseCode.code}, msg=#{responseCode.msg}, data=null
      */
-    public static <V> Response<V> code(ResponseCode responseCode){
+    public static <V> Response<V> code(ResponseCode responseCode) {
         return new Response<>(responseCode.getCode(), responseCode.getMsg(), null);
     }
 
     /**
      * status=200, code=#{responseCode.code}, msg=#{responseCode.msg}, data=#{data}
      */
-    public static <V> Response<V> data(ResponseCode responseCode, V data){
+    public static <V> Response<V> data(ResponseCode responseCode, V data) {
         return new Response<>(responseCode.getCode(), responseCode.getMsg(), data);
     }
 
     /**
      * status=200, code=#{resp.code}, msg=#{msg}, data=null
      */
-    public static <V> Response<V> msg(ResponseCode responseCode, String msg){
+    public static <V> Response<V> msg(ResponseCode responseCode, String msg) {
         return new Response<>(responseCode.getCode(), msg, null);
     }
 
     /**
      * status=200, code=200, msg="success", data=null
      */
-    public static <V> Response<V> success(){
+    public static <V> Response<V> success() {
         return new Response<>(SUCCESS.getCode(), SUCCESS.getMsg(), null);
     }
 
     /**
      * status=200, code=200, msg="success", data=#{data}
      */
-    public static <V> Response<V> success(V data){
+    public static <V> Response<V> success(V data) {
         return new Response<>(SUCCESS.getCode(), SUCCESS.getMsg(), data);
     }
 
     /**
      * status=200, code=200, msg=#{msg}, data=#{data}
      */
-    public static <V> Response<V> success(V data, String msg){
+    public static <V> Response<V> success(V data, String msg) {
         return new Response<>(SUCCESS.getCode(), msg, data);
     }
 
     /**
      * status=200, code=500, msg="Internal Server Error", data=null
      */
-    public static <V> Response<V> error(){
+    public static <V> Response<V> error() {
         return new Response<>(INTERNAL_SERVER_ERROR.getCode(), INTERNAL_SERVER_ERROR.getMsg(), null);
     }
 
     /**
      * status=200, code=500, msg=#{msg}, data=null
      */
-    public static <V> Response<V> error(String msg){
+    public static <V> Response<V> error(String msg) {
         return new Response<>(INTERNAL_SERVER_ERROR.getCode(), msg, null);
     }
 
     /**
      * status=200, code=200, msg="success", data=#{page}
      */
-    public static <E> Response<Page<E>> page(List<E> list){
+    public static <E> Response<Page<E>> page(List<E> list) {
         Response<Page<E>> response = new Response<>(SUCCESS.getCode(), SUCCESS.getMsg(), null);
-        if(list == null){
+        if (list == null) {
             list = new ArrayList<>();
         }
 
-        if(list instanceof com.github.pagehelper.Page<E> page){
+        if (list instanceof com.github.pagehelper.Page<E> page) {
             response.setData(new Page<>(page, page.getTotal()));
-        }else {
+        } else {
             response.setData(new Page<>(list, list.size()));
         }
         return response;
@@ -136,7 +143,7 @@ public class Response<T> {
     /**
      * status=200, code=200, msg="success", data=#{page}
      */
-    public static <E> Response<Page<E>> page(com.baomidou.mybatisplus.extension.plugins.pagination.Page<E> page){
+    public static <E> Response<Page<E>> page(com.baomidou.mybatisplus.extension.plugins.pagination.Page<E> page) {
         Response<Page<E>> response = new Response<>(SUCCESS.getCode(), SUCCESS.getMsg(), null);
         response.setData(new Page<>(page.getRecords(), page.getTotal()));
         return response;
@@ -145,7 +152,7 @@ public class Response<T> {
     /**
      * status=200, code=200, msg="success", data=#{page}
      */
-    public static <T, E> Response<Page<E>> page(com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> page, Class<E> clazz){
+    public static <T, E> Response<Page<E>> page(com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> page, Class<E> clazz) {
         Response<Page<E>> response = new Response<>(SUCCESS.getCode(), SUCCESS.getMsg(), null);
         response.setData(new Page<>(copyList(page.getRecords(), clazz), page.getTotal()));
         return response;
@@ -187,49 +194,49 @@ public class Response<T> {
         return srcList.stream().map(src -> copyBean(src, clazz)).toList();
     }
 
+    @Data
     public static class Page<E> {
 
-        /** 总数 */
+        /**
+         * 总数
+         */
         private int total;
 
-        /** 列表数据 */
+        /**
+         * 列表数据
+         */
         private Collection<E> list;
 
-        /** 页码 */
+        /**
+         * 页码
+         */
+        @JsonIgnore
         private int page;
 
-        /** 每页行数 */
+        /**
+         * 每页行数
+         */
+        @JsonIgnore
         private int pageSize;
 
-        /** 总页数 */
+        /**
+         * 总页数
+         */
+        @JsonIgnore
         private int totalPage;
 
-        public Page(){
+        public Page() {
 
         }
 
-        public Page(Collection<E> list, int total){
+        public Page(Collection<E> list, int total) {
             this.list = list;
             this.total = total;
         }
 
-        public Page(Collection<E> list, long total){
+        public Page(Collection<E> list, long total) {
             this.list = list;
-            this.total = (int)total;
-        }
-
-        public int getTotal() {
-            return total;
-        }
-
-        @Deprecated
-        public void setTotalRows(int total) {
-            this.total = total;
-        }
-
-        @Deprecated
-        public void setTotalRows(long total) {
-            this.total = (int)total;
+            this.total = (int) total;
         }
 
         public void setTotal(int total) {
@@ -237,11 +244,7 @@ public class Response<T> {
         }
 
         public void setTotal(long total) {
-            this.total = (int)total;
-        }
-
-        public int getTotalPage() {
-            return totalPage;
+            this.total = (int) total;
         }
 
         public void setTotalPage(int totalPage) {
@@ -249,39 +252,23 @@ public class Response<T> {
         }
 
         public void setTotalPage(long totalPage) {
-            this.totalPage = (int)totalPage;
-        }
-
-        public Collection<E> getList() {
-            return list;
-        }
-
-        public void setList(Collection<E> list) {
-            this.list = list;
-        }
-
-        public int getPage() {
-            return page;
-        }
-
-        public int getPageSize() {
-            return pageSize;
+            this.totalPage = (int) totalPage;
         }
 
         public void setPage(int page) {
             this.page = page;
         }
 
+        public void setPage(long page) {
+            this.page = (int) page;
+        }
+
         public void setPageSize(int pageSize) {
             this.pageSize = pageSize;
         }
 
-        public void setPage(long page) {
-            this.page = (int)page;
-        }
-
         public void setPageSize(long pageSize) {
-            this.pageSize = (int)pageSize;
+            this.pageSize = (int) pageSize;
         }
 
         @Override

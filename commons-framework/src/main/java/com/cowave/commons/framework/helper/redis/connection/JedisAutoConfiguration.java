@@ -9,7 +9,6 @@
  */
 package com.cowave.commons.framework.helper.redis.connection;
 
-import com.cowave.commons.framework.helper.redis.RedisAutoConfiguration;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -62,6 +61,7 @@ public class JedisAutoConfiguration {
         return redisConnectionConfiguration.redisConnectionFactory(builderCustomizers);
     }
 
+    @ConditionalOnMissingBean(name = "commonRedisConnectionConfiguration")
     @Conditional(CommonRedisCondition.class)
     @Bean
     public JedisRedisConnectionConfiguration commonRedisConnectionConfiguration(Environment environment,
@@ -71,7 +71,8 @@ public class JedisAutoConfiguration {
         return new JedisRedisConnectionConfiguration(properties, sentinelConfiguration, clusterConfiguration);
     }
 
-    @ConditionalOnBean(name = "commonRedisConnectionFactory")
+    @ConditionalOnMissingBean(name = "commonRedisConnectionFactory")
+    @ConditionalOnBean(name = "commonRedisConnectionConfiguration")
     @Bean
     public JedisConnectionFactory commonRedisConnectionFactory(
             @Qualifier("commonRedisConnectionConfiguration") JedisRedisConnectionConfiguration redisConnectionConfiguration,

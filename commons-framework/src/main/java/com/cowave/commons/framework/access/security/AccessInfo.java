@@ -16,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.annotation.Nullable;
 
@@ -24,7 +25,7 @@ import javax.annotation.Nullable;
  * @author shanhuiming
  *
  */
-@Nullable
+@NoArgsConstructor
 @Data
 public class AccessInfo {
 

@@ -94,14 +94,15 @@ public class GeometryHelper {
     public static Geometry createPolygon(List<GeoPoint> points, boolean original) {
         Assert.isTrue(CollectionUtils.isNotEmpty(points), "geoPointList can't be null");
         if (original) {
-            // 1.经纬度单位换算
+            // 原始单位换算
             for (GeoPoint geoPoint : points) {
                 geoPoint.setLatitude(geoPoint.getLatitude() / 100000);
                 geoPoint.setLongitude(geoPoint.getLongitude() / 100000);
             }
-            // 2.头尾相连
-            points.add(points.get(0));
         }
+
+        // 头尾相连
+        points.add(points.get(0));
 
         //将经纬度坐标转换为墨卡托坐标
         List<Coordinate> mercatorList = new ArrayList<>();

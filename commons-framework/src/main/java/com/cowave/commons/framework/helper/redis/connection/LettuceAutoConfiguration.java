@@ -81,6 +81,7 @@ public class LettuceAutoConfiguration {
         return builder.build();
     }
 
+    @ConditionalOnMissingBean(name = "commonRedisConnectionConfiguration")
     @ConditionalOnBean(name = "commonClientResources")
     @Bean
     public LettuceRedisConnectionConfiguration commonRedisConnectionConfiguration(Environment environment,
@@ -90,6 +91,7 @@ public class LettuceAutoConfiguration {
         return new LettuceRedisConnectionConfiguration(properties, sentinelConfigurationProvider, clusterConfigurationProvider);
     }
 
+    @ConditionalOnMissingBean(name = "commonRedisConnectionFactory")
     @ConditionalOnBean(name = "commonRedisConnectionConfiguration")
     @Bean
     public LettuceConnectionFactory commonRedisConnectionFactory(
