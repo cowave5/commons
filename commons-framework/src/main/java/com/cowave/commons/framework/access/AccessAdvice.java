@@ -33,6 +33,7 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import javax.validation.ConstraintViolationException;
 import java.beans.PropertyEditorSupport;
@@ -124,6 +125,11 @@ public class AccessAdvice {
     @ExceptionHandler(HttpMessageConversionException.class)
     public HttpResponse<Response<Void>> handleHttpMessageConversionException(HttpMessageConversionException e) {
         return error(e, BAD_REQUEST.getStatus(), BAD_REQUEST.getCode(), ERR_LEVEL_2, Messages.msg("frame.advice.httpMessageConversionException"));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public HttpResponse<Response<Void>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
+        return error(e, BAD_REQUEST.getStatus(), BAD_REQUEST.getCode(), ERR_LEVEL_2, Messages.msg("frame.advice.methodArgumentTypeMismatchException"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

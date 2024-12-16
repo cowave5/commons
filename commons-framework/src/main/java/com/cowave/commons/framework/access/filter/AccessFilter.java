@@ -85,7 +85,8 @@ public class AccessFilter implements Filter {
         // 设置Access
         String accessIp = ServletUtils.getRequestIp(httpServletRequest);
         String accessUrl = httpServletRequest.getRequestURI();
-        Access.set(new Access(true, accessId, accessIp, accessUrl, System.currentTimeMillis()));
+        String method = httpServletRequest.getMethod().toLowerCase();
+        Access.set(new Access(true, accessId, accessIp, accessUrl, method, System.currentTimeMillis()));
 
         // 记录请求日志，顺便记录一下分页参数
         AccessRequestWrapper accessRequestWrapper = new AccessRequestWrapper(httpServletRequest, objectMapper);

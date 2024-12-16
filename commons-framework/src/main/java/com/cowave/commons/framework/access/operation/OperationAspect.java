@@ -61,6 +61,7 @@ public class OperationAspect {
             "&& (@annotation(org.springframework.web.bind.annotation.RequestMapping) " +
             "|| @annotation(org.springframework.web.bind.annotation.GetMapping) " +
             "|| @annotation(org.springframework.web.bind.annotation.PostMapping) " +
+            "|| @annotation(org.springframework.web.bind.annotation.PatchMapping) " +
             "|| @annotation(org.springframework.web.bind.annotation.PutMapping) " +
             "|| @annotation(org.springframework.web.bind.annotation.DeleteMapping))")
     public void oplog() {
@@ -109,13 +110,13 @@ public class OperationAspect {
 
     private void handleOperation(Operation operation, EvaluationContext context){
         if(operation.isAsync() && taskExecutor != null){
-            taskExecutor.execute(() -> exprParser.parseExpression(operation.handleExpr()).getValue(context));
+            taskExecutor.execute(() -> exprParser.parseExpression(operation.expr()).getValue(context));
         }else{
             if(operation.isAsync()){
                 log.warn("No TaskExecutor found, recording operation log synchronously");
             }
             try{
-                exprParser.parseExpression(operation.handleExpr()).getValue(context);
+                exprParser.parseExpression(operation.expr()).getValue(context);
             }catch (Exception ex){
                 log.error("", ex);
             }
@@ -180,6 +181,7 @@ public class OperationAspect {
         opInfo.setAccessTime(Access.accessTime());
         opInfo.setAccessIp(Access.accessIp());
         opInfo.setAccessUrl(Access.accessUrl());
+        opInfo.setAccessMethod(Access.accessMethod());
         opInfo.setUserId(Access.userId());
         opInfo.setUserCode(Access.userCode());
         opInfo.setUserName(Access.userName());
@@ -187,6 +189,7 @@ public class OperationAspect {
         opInfo.setDeptId(Access.deptId());
         opInfo.setDeptCode(Access.deptCode());
         opInfo.setDeptName(Access.deptName());
+        opInfo.setOpModule(operation.module());
         opInfo.setOpType(operation.type());
         opInfo.setOpAction(operation.action());
         opInfo.setOpFlag(operation.flag());
@@ -194,20 +197,20 @@ public class OperationAspect {
         opInfo.setOpCost(System.currentTimeMillis() - Access.accessTime().getTime());
 
         // handleExpr
-        String handleExpr = operation.handleExpr();
-        if(StringUtils.isBlank(handleExpr)){
+        String expr = operation.expr();
+        if(StringUtils.isBlank(expr)){
             return false;
         }
 
-        int startIndex = handleExpr.indexOf("#") + 1;
-        int endIndex = handleExpr.indexOf(".");
+        int startIndex = expr.indexOf("#") + 1;
+        int endIndex = expr.indexOf(".");
         if(startIndex == 0 || endIndex == -1){
-            throw new RuntimeException("invalid handleExpr: " + handleExpr);
+            throw new RuntimeException("invalid handleExpr: " + expr);
         }
 
-        String handlerBean = handleExpr.substring(startIndex, endIndex);
+        String handlerBean = expr.substring(startIndex, endIndex);
         if(!applicationContext.containsBean(handlerBean)){
-            throw new RuntimeException(" can't found bean of " + handlerBean + " in handleExpr: " + handleExpr);
+            throw new RuntimeException(" can't found bean of " + handlerBean + " in handleExpr: " + expr);
         }
 
         // 处理方法

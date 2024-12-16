@@ -62,6 +62,7 @@ public class AccessLogger {
     @Pointcut("@annotation(org.springframework.web.bind.annotation.RequestMapping) " +
             "|| @annotation(org.springframework.web.bind.annotation.GetMapping) " +
             "|| @annotation(org.springframework.web.bind.annotation.PostMapping) " +
+            "|| @annotation(org.springframework.web.bind.annotation.PatchMapping) " +
             "|| @annotation(org.springframework.web.bind.annotation.PutMapping) " +
             "|| @annotation(org.springframework.web.bind.annotation.DeleteMapping)")
     public void request() {

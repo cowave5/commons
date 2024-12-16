@@ -26,6 +26,11 @@ import java.lang.annotation.Target;
 public @interface Operation {
 
     /**
+     * 操作模块
+     */
+    String module() default "";
+
+    /**
      * 操作类型
      */
     String type() default "";
@@ -34,11 +39,6 @@ public @interface Operation {
      * 操作动作
      */
     String action() default "";
-
-    /**
-     * 处理标识
-     */
-    String flag() default "";
 
     /**
      * 操作描述，支持SPEL，可用参数
@@ -58,7 +58,12 @@ public @interface Operation {
      * <p>
      * <p> 示例：xxxHandler.doSomething(opInfo, resp, exception, ...)
      */
-    String handleExpr() default "";
+    String expr() default "";
+
+    /**
+     * 处理标识
+     */
+    String flag() default "";
 
     /**
      * 是否异步处理

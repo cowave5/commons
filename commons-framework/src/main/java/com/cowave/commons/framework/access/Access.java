@@ -51,6 +51,8 @@ public class Access {
 
     private final String accessUrl;
 
+    private final String accessMethod;
+
     private final Long accessTime;
 
     private AccessUserDetails userDetails;
@@ -63,11 +65,12 @@ public class Access {
 
     private Map<String, Object> requestParam = new HashMap<>();
 
-    public Access(boolean accessFiltered, String accessId, String accessIp, String accessUrl, Long accessTime){
+    public Access(boolean accessFiltered, String accessId, String accessIp, String accessUrl, String accessMethod, Long accessTime){
         this.accessFiltered = accessFiltered;
         this.accessId = accessId;
         this.accessIp = accessIp;
         this.accessUrl = accessUrl;
+        this.accessMethod = accessMethod;
         this.accessTime = accessTime;
     }
 
@@ -83,16 +86,18 @@ public class Access {
         String accessId = null;
         String accessIp = null;
         String accessUrl = null;
+        String accessMethod = null;
         HttpServletRequest httpServletRequest = httpRequest();
         if(httpServletRequest != null){
             accessId = httpServletRequest.getHeader("X-Request-ID");
             accessIp = ServletUtils.getRequestIp(httpServletRequest);
             accessUrl = httpServletRequest.getRequestURI();
+            accessMethod = httpServletRequest.getMethod().toLowerCase();
         }
         if (StringUtils.isBlank(accessId)) {
             accessId = accessIdGenerator.newAccessId();
         }
-        return new Access(false, accessId, accessIp, accessUrl, System.currentTimeMillis());
+        return new Access(false, accessId, accessIp, accessUrl, accessMethod, System.currentTimeMillis());
     }
 
     public static void remove(){
@@ -109,6 +114,10 @@ public class Access {
 
     public static String accessUrl() {
         return Optional.ofNullable(get()).map(access -> access.accessUrl).orElse(null);
+    }
+
+    public static String accessMethod() {
+        return Optional.ofNullable(get()).map(access -> access.accessMethod).orElse(null);
     }
 
     public static Date accessTime() {

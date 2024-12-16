@@ -140,7 +140,7 @@ public class KafkaAutoConfiguration {
     }
 
     private void checkAuthProperties(KafkaProperties properties) {
-        String userName = properties.getProperties().get("username");
+        String userName = properties.getProperties().remove("username");
         if (StringUtils.isBlank(userName)) {
             properties.getProperties().clear();
         }

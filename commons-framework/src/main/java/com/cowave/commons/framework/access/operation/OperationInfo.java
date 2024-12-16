@@ -39,6 +39,11 @@ public class OperationInfo {
     private String accessUrl;
 
     /**
+     * accessMethod
+     */
+    private String accessMethod;
+
+    /**
      * userId
      */
     private Object userId;
@@ -77,6 +82,11 @@ public class OperationInfo {
      * 请求参数
      */
     private Map<String, Object> opArgs;
+
+    /**
+     * 操作模块
+     */
+    private String opModule;
 
     /**
      * 操作类型
