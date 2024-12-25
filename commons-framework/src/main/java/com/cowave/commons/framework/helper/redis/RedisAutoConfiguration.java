@@ -40,12 +40,12 @@ public class RedisAutoConfiguration {
     public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory){
         RedisTemplate<Object, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
-        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer();
+        // key-value的序列化
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(serializer);
-        // Hash的key也采用StringRedisSerializer的序列化方式
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        // Hash中key-value的序列话
         template.setHashKeySerializer(new StringRedisSerializer());
-        template.setHashValueSerializer(serializer);
+        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;
     }
 
@@ -80,12 +80,12 @@ public class RedisAutoConfiguration {
             @Qualifier("commonRedisConnectionFactory") RedisConnectionFactory redisConnectionFactory){
         RedisTemplate<Object, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
-        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer();
+        // key-value的序列化
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(serializer);
-        // Hash的key也采用StringRedisSerializer的序列化方式
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        // Hash中key-value的序列话
         template.setHashKeySerializer(new StringRedisSerializer());
-        template.setHashValueSerializer(serializer);
+        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;
     }
 

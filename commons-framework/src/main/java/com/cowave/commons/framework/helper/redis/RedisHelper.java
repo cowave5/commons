@@ -36,7 +36,7 @@ import javax.validation.constraints.NotNull;
 @SuppressWarnings(value = { "unchecked", "rawtypes" })
 public class RedisHelper{
 
-    private final RedisTemplate redisTemplate;
+    private RedisTemplate redisTemplate;
 
     public static RedisHelper newRedisHelper(RedisTemplate<Object, Object> template){
         return new RedisHelper(template);
@@ -75,7 +75,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/keys">Redis Documentation: KEYS</a>
      */
-    public Collection<String> keys(final String pattern){
+    public Collection<String> keys(String pattern){
         List<String> keys = new ArrayList<>();
         redisTemplate.execute((RedisConnection connection) -> {
             Cursor<byte[]> cursor = connection.scan(ScanOptions.scanOptions().match(pattern).count(100).build());
@@ -90,7 +90,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/del">Redis Documentation: DEL</a>
      */
-    public void delete(final String... keys){
+    public void delete(String... keys){
         if(ArrayUtils.isEmpty(keys)){
             return;
         }
@@ -100,14 +100,14 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/del">Redis Documentation: DEL</a>
      */
-    public void delete(final Collection<String> collection){
+    public void delete(Collection<String> collection){
         redisTemplate.delete(collection);
     }
 
     /**
      * @see <a href="https://redis.io/commands/pexpire">Redis Documentation: PEXPIRE</a>
      */
-    public Boolean expire(final String key, final long timeout, final TimeUnit unit){
+    public Boolean expire(String key, long timeout, TimeUnit unit){
         return redisTemplate.expire(key, timeout, unit);
     }
 
@@ -130,7 +130,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/get">Redis Documentation: GET</a>
      */
-    public <T> T getValue(final String key){
+    public <T> T getValue(String key){
         ValueOperations<String, T> operation = redisTemplate.opsForValue();
         return operation.get(key);
     }
@@ -138,7 +138,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/getdel">Redis Documentation: GETDEL</a>
      */
-    public <T> T getValueAndDelete(final String key){
+    public <T> T getValueAndDelete(String key){
         ValueOperations<String, T> operation = redisTemplate.opsForValue();
         return operation.getAndDelete(key);
     }
@@ -146,7 +146,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/getset">Redis Documentation: GETSET</a>
      */
-    public <T> T getValueAndPut(final String key, final T value){
+    public <T> T getValueAndPut(String key, T value){
         ValueOperations<String, T> operation = redisTemplate.opsForValue();
         return operation.getAndSet(key, value);
     }
@@ -154,7 +154,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/getex">Redis Documentation: GETEX</a>
      */
-    public <T> T getValueAndExpire(final String key, final long timeout, final TimeUnit timeUnit){
+    public <T> T getValueAndExpire(String key, long timeout, TimeUnit timeUnit){
         ValueOperations<String, T> operation = redisTemplate.opsForValue();
         return operation.getAndExpire(key, timeout, timeUnit);
     }
@@ -162,7 +162,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/getex">Redis Documentation: GETEX</a>
      */
-    public <T> T getValueAndPersist(final String key){
+    public <T> T getValueAndPersist(String key){
         ValueOperations<String, T> operation = redisTemplate.opsForValue();
         return operation.getAndPersist(key);
     }
@@ -170,7 +170,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/mget">Redis Documentation: MGET</a>
      */
-    public <T> List<T> getMultiValue(final String... keys){
+    public <T> List<T> getMultiValue(String... keys){
         ValueOperations<String, T> operation = redisTemplate.opsForValue();
         return operation.multiGet(List.of(keys));
     }
@@ -178,7 +178,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/mget">Redis Documentation: MGET</a>
      */
-    public <T> List<T> getMultiValue(final Collection<String> keys){
+    public <T> List<T> getMultiValue(Collection<String> keys){
         ValueOperations<String, T> operation = redisTemplate.opsForValue();
         return operation.multiGet(keys);
     }
@@ -186,7 +186,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/set">Redis Documentation: SET</a>
      */
-    public <T> void putValue(final String key, final T value){
+    public <T> void putValue(String key, T value){
         Asserts.notNull(value, "redis value can't be bull");
         redisTemplate.opsForValue().set(key, value);
     }
@@ -194,7 +194,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/setex">Redis Documentation: SETEX</a>
      */
-    public <T> void putExpire(final String key, final T value, final Integer timeout, final TimeUnit timeUnit){
+    public <T> void putExpire(String key, T value, Integer timeout, TimeUnit timeUnit){
         Asserts.notNull(value, "redis value can't be bull");
         redisTemplate.opsForValue().set(key, value, timeout, timeUnit);
     }
@@ -202,7 +202,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/setnx">Redis Documentation: SETNX</a>
      */
-    public <T> Boolean putValueIfAbsent(final String key, final T value){
+    public <T> Boolean putValueIfAbsent(String key, T value){
         Asserts.notNull(value, "redis value can't be bull");
         return redisTemplate.opsForValue().setIfAbsent(key, value);
     }
@@ -210,7 +210,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/set">Redis Documentation: SET</a>
      */
-    public <T> Boolean putExpireIfAbsent(final String key, final T value, final long timeout, final TimeUnit timeUnit){
+    public <T> Boolean putExpireIfAbsent(String key, T value, long timeout, TimeUnit timeUnit){
         Asserts.notNull(value, "redis value can't be bull");
         return redisTemplate.opsForValue().setIfAbsent(key, value, timeout, timeUnit);
     }
@@ -218,7 +218,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/set">Redis Documentation: SET</a>
      */
-    public <T> Boolean putValueIfPresent(final String key, final T value){
+    public <T> Boolean putValueIfPresent(String key, T value){
         Asserts.notNull(value, "redis value can't be bull");
         return redisTemplate.opsForValue().setIfPresent(key, value);
     }
@@ -226,7 +226,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/set">Redis Documentation: SET</a>
      */
-    public <T> Boolean putExpireIfPresent(final String key, final T value, final long timeout, final TimeUnit timeUnit){
+    public <T> Boolean putExpireIfPresent(String key, T value, long timeout, TimeUnit timeUnit){
         Asserts.notNull(value, "redis value can't be bull");
         return redisTemplate.opsForValue().setIfPresent(key, value, timeout, timeUnit);
     }
@@ -234,7 +234,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/mset">Redis Documentation: MSET</a>
      */
-    public <T> void putMultiValue(final Map<String, T> map){
+    public void putMultiValue(Map<String, Object> map){
         Asserts.notEmpty(map, "redis value can't be bull");
         redisTemplate.opsForValue().multiSet(map);
     }
@@ -242,14 +242,14 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/incrby">Redis Documentation: INCRBY</a>
      */
-    public Long incrementValue(final String key, final int step){
+    public Long incrementValue(String key, int step){
         return redisTemplate.opsForValue().increment(key, step);
     }
 
     /**
      * @see <a href="https://redis.io/commands/decrby">Redis Documentation: DECRBY</a>
      */
-    public Long decrementValue(final String key, final int step){
+    public Long decrementValue(String key, int step){
         return redisTemplate.opsForValue().decrement(key, step);
     }
 
@@ -275,21 +275,21 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/hexits">Redis Documentation: HEXISTS</a>
      */
-    public Boolean hasKeyInMap(final String key, final String hKey){
+    public Boolean hasKeyInMap(String key, String hKey){
         return redisTemplate.opsForHash().hasKey(key, hKey);
     }
 
     /**
      * @see <a href="https://redis.io/commands/hgetall">Redis Documentation: HGETALL</a>
      */
-    public <T> Map<String, T> getMap(final String key){
+    public <T> Map<String, T> getMap(String key){
         return redisTemplate.opsForHash().entries(key);
     }
 
     /**
      * @see <a href="https://redis.io/commands/hget">Redis Documentation: HGET</a>
      */
-    public <T> T getMap(final String key, final String hKey){
+    public <T> T getMap(String key, String hKey){
         HashOperations<String, String, T> opsForHash = redisTemplate.opsForHash();
         return opsForHash.get(key, hKey);
     }
@@ -297,14 +297,14 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/hmget">Redis Documentation: HMGET</a>
      */
-    public <T> List<T> getMultiMap(final String key, final Collection<String> hKeys){
+    public <T> List<T> getMultiMap(String key, Collection<String> hKeys){
         return redisTemplate.opsForHash().multiGet(key, hKeys);
     }
 
     /**
      * @see <a href="https://redis.io/commands/hset">Redis Documentation: HSET</a>
      */
-    public <T> void putMap(final String key, final String hKey, final T value){
+    public <T> void putMap(String key, String hKey, T value){
         Asserts.notNull(value, "redis value can't be bull");
         redisTemplate.opsForHash().put(key, hKey, value);
     }
@@ -312,7 +312,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/hmset">Redis Documentation: HMSET</a>
      */
-    public <T> void putMap(final String key, final Map<String, T> map){
+    public void putMap(String key, Map<String, Object> map){
         if(map == null || map.isEmpty()) {
             return;
         }
@@ -322,7 +322,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/hsetnx">Redis Documentation: HSETNX</a>
      */
-    public <T> Boolean putMapIfAbsent(final String key, final String hKey, final T value){
+    public <T> Boolean putMapIfAbsent(String key, String hKey, T value){
         HashOperations<String, String, T> hashOps = redisTemplate.opsForHash();
         return hashOps.putIfAbsent(key, hKey, value);
     }
@@ -330,14 +330,14 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/hincrby">Redis Documentation: HINCRBY</a>
      */
-    public Long incrementMap(final String key, final String hKey, long delta) {
+    public Long incrementMap(String key, String hKey, long delta) {
         return redisTemplate.opsForHash().increment(key, hKey, delta);
     }
 
     /**
      * @see <a href="https://redis.io/commands/hdel">Redis Documentation: HDEL</a>
      */
-    public void removeFromMap(final String key, final String hKey){
+    public void removeFromMap(String key, String hKey){
         HashOperations hashOperations = redisTemplate.opsForHash();
         hashOperations.delete(key, hKey);
     }
@@ -356,21 +356,21 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/lpos">Redis Documentation: LPOS</a>
      */
-    public <T> Long indexOfList(final String key, final T value){
+    public <T> Long indexOfList(String key, T value){
         return redisTemplate.opsForList().indexOf(key, value);
     }
 
     /**
      * @see <a href="https://redis.io/commands/lpos">Redis Documentation: LPOS</a>
      */
-    public <T> Long lastIndexOfList(final String key, final T value){
+    public <T> Long lastIndexOfList(String key, T value){
         return redisTemplate.opsForList().lastIndexOf(key, value);
     }
 
     /**
      * @see <a href="https://redis.io/commands/lindex">Redis Documentation: LINDEX</a>
      */
-    public <T> T indexValueOfList(final String key, final long index){
+    public <T> T indexValueOfList(String key, long index){
         ListOperations<String, T> listOperations = redisTemplate.opsForList();
         return listOperations.index(key, index);
     }
@@ -378,21 +378,21 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/lrange">Redis Documentation: LRANGE</a>
      */
-    public <T> List<T> rangeOfList(final String key, int start, int end){
+    public <T> List<T> rangeOfList(String key, int start, int end){
         return redisTemplate.opsForList().range(key, start, end);
     }
 
     /**
      * @see <a href="https://redis.io/commands/lset">Redis Documentation: LSET</a>
      */
-    public <T> void insertListByIndex(final String key, final long index, T value){
+    public <T> void insertListByIndex(String key, long index, T value){
         redisTemplate.opsForList().set(key, index, value);
     }
 
     /**
      * @see <a href="https://redis.io/commands/linsert">Redis Documentation: LINSERT</a>
      */
-    public <T> long insertListBefore(final String key, final T pivot, final T value){
+    public <T> long insertListBefore(String key, T pivot, T value){
         Long count = redisTemplate.opsForList().leftPush(key, pivot, value);
         return count == null ? 0 : count;
     }
@@ -400,7 +400,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/linsert">Redis Documentation: LINSERT</a>
      */
-    public <T> long insertListAfter(final String key, final T pivot, final T value){
+    public <T> long insertListAfter(String key, T pivot, T value){
         Long count = redisTemplate.opsForList().rightPush(key, pivot, value);
         return count == null ? 0 : count;
     }
@@ -408,7 +408,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/lpush">Redis Documentation: LPUSH</a>
      */
-    public <T> long pushListFromLeft(final String key, final T value){
+    public <T> long pushListFromLeft(String key, T value){
         Long count = redisTemplate.opsForList().leftPush(key, value);
         return count == null ? 0 : count;
     }
@@ -416,7 +416,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/lpushx">Redis Documentation: LPUSHX</a>
      */
-    public <T> long pushListFromLeftIfPresent(final String key, final T value){
+    public <T> long pushListFromLeftIfPresent(String key, T value){
         Long count = redisTemplate.opsForList().leftPushIfPresent(key, value);
         return count == null ? 0 : count;
     }
@@ -424,7 +424,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/lpush">Redis Documentation: LPUSH</a>
      */
-    public <T> long pushAllListFromLeft(final String key, final T... values){
+    public long pushAllListFromLeft(String key, Object... values){
         Long count = redisTemplate.opsForList().leftPushAll(key, values);
         return count == null ? 0 : count;
     }
@@ -432,7 +432,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/lpush">Redis Documentation: LPUSH</a>
      */
-    public <T> long pushAllListFromLeft(final String key, final Collection<T> values){
+    public long pushAllListFromLeft(String key, Collection<Object> values){
         Long count = redisTemplate.opsForList().leftPushAll(key, values);
         return count == null ? 0 : count;
     }
@@ -440,7 +440,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/rpush">Redis Documentation: RPUSH</a>
      */
-    public <T> long pushListFromRight(final String key, final T value){
+    public <T> long pushListFromRight(String key, T value){
         Long count = redisTemplate.opsForList().rightPush(key, value);
         return count == null ? 0 : count;
     }
@@ -448,7 +448,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/rpushx">Redis Documentation: RPUSHX</a>
      */
-    public <T> long pushListFromRightIfPresent(final String key, final T value){
+    public <T> long pushListFromRightIfPresent(String key, T value){
         Long count = redisTemplate.opsForList().rightPushIfPresent(key, value);
         return count == null ? 0 : count;
     }
@@ -456,7 +456,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/rpush">Redis Documentation: RPUSH</a>
      */
-    public <T> long pushAllListFromRight(final String key, final T... values){
+    public long pushAllListFromRight(String key, Object... values){
         Long count = redisTemplate.opsForList().rightPushAll(key, values);
         return count == null ? 0 : count;
     }
@@ -464,7 +464,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/rpush">Redis Documentation: RPUSH</a>
      */
-    public <T> long pushAllListFromRight(final String key, final Collection<T> values){
+    public long pushAllListFromRight(String key, Collection<Object> values){
         Long count = redisTemplate.opsForList().rightPushAll(key, values);
         return count == null ? 0 : count;
     }
@@ -472,7 +472,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/lpop">Redis Documentation: LPOP</a>
      */
-    public <T> T popListFromLeft(final String key){
+    public <T> T popListFromLeft(String key){
         ListOperations<String, T> listOperations = redisTemplate.opsForList();
         return listOperations.leftPop(key);
     }
@@ -480,7 +480,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/blpop">Redis Documentation: BLPOP</a>
      */
-    public <T> T popListFromLeft(final String key, final long timeout, final TimeUnit timeUnit){
+    public <T> T popListFromLeft(String key, long timeout, TimeUnit timeUnit){
         ListOperations<String, T> listOperations = redisTemplate.opsForList();
         return listOperations.leftPop(key, timeout, timeUnit);
     }
@@ -488,7 +488,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/rpop">Redis Documentation: RPOP</a>
      */
-    public <T> T popListFromRight(final String key){
+    public <T> T popListFromRight(String key){
         ListOperations<String, T> listOperations = redisTemplate.opsForList();
         return listOperations.rightPop(key);
     }
@@ -496,7 +496,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/brpop">Redis Documentation: BRPOP</a>
      */
-    public <T> T popListFromRight(final String key, final long timeout, final TimeUnit timeUnit){
+    public <T> T popListFromRight(String key, long timeout, TimeUnit timeUnit){
         ListOperations<String, T> listOperations = redisTemplate.opsForList();
         return listOperations.rightPop(key, timeout, timeUnit);
     }
@@ -536,7 +536,7 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/lrem">Redis Documentation: LREM</a>
      */
-    public <T> Long removeFromList(final String key, final T value, final long count){
+    public <T> Long removeFromList(String key, T value, long count){
         return redisTemplate.opsForList().remove(key, count, value);
     }
 
@@ -547,38 +547,38 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/scard">Redis Documentation: SCARD</a>
      */
-    public Long sizeOfSet(final String key) {
+    public Long sizeOfSet(String key) {
         return redisTemplate.opsForSet().size(key);
     }
 
     /**
      * @see <a href="https://redis.io/commands/scan">Redis Documentation: SCAN</a>
      */
-    public <T> Cursor<T> scanSet(final String key, final ScanOptions scanOptions) {
+    public <T> Cursor<T> scanSet(String key, ScanOptions scanOptions) {
         return redisTemplate.opsForSet().scan(key, scanOptions);
     }
 
     /**
      * @see <a href="https://redis.io/commands/sismember">Redis Documentation: SISMEMBER</a>
      */
-    public Boolean memberOfSet(final String key, final Object member) {
+    public Boolean memberOfSet(String key, Object member) {
         return redisTemplate.opsForSet().isMember(key, member);
     }
 
     /**
      * @see <a href="https://redis.io/commands/smembers">Redis Documentation: SMEMBERS</a>
      */
-    public <T> Set<T> getSet(final String key){
+    public <T> Set<T> getSet(String key){
         return redisTemplate.opsForSet().members(key);
     }
 
     /**
      * @see <a href="https://redis.io/commands/sadd">Redis Documentation: SADD</a>
      */
-    public <T> void offerSet(final String key, final Set<T> dataSet){
+    public void offerSet(String key, Set<Object> dataSet){
         Asserts.notNull(dataSet, "redis value can't be bull");
-        BoundSetOperations<String, T> setOperation = redisTemplate.boundSetOps(key);
-        for (T t : dataSet) {
+        BoundSetOperations<String, Object> setOperation = redisTemplate.boundSetOps(key);
+        for (Object t : dataSet) {
             setOperation.add(t);
         }
     }
@@ -586,10 +586,10 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/sadd">Redis Documentation: SADD</a>
      */
-    public <T> void offerSet(final String key, final T... values){
+    public void offerSet(String key, Object... values){
         Asserts.notNull(values, "redis value can't be bull");
-        BoundSetOperations<String, T> setOperation = redisTemplate.boundSetOps(key);
-        for (T t : values) {
+        BoundSetOperations<String, Object> setOperation = redisTemplate.boundSetOps(key);
+        for (Object t : values) {
             setOperation.add(t);
         }
     }
@@ -597,112 +597,112 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/spop">Redis Documentation: SPOP</a>
      */
-    public <T> List<T> popSet(final String key, final int count){
+    public <T> List<T> popSet(String key, int count){
         return redisTemplate.opsForSet().pop(key, count);
     }
 
     /**
      * @see <a href="https://redis.io/commands/sinter">Redis Documentation: SINTER</a>
      */
-    public <T> Set<T> intersectSet(final Collection<String> keys){
+    public <T> Set<T> intersectSet(Collection<String> keys){
         return redisTemplate.opsForSet().intersect(keys);
     }
 
     /**
      * @see <a href="https://redis.io/commands/sinter">Redis Documentation: SINTER</a>
      */
-    public <T> Set<T> intersectSet(final String key, final Collection<String> others){
+    public <T> Set<T> intersectSet(String key, Collection<String> others){
         return redisTemplate.opsForSet().intersect(key, others);
     }
 
     /**
      * @see <a href="https://redis.io/commands/sinter">Redis Documentation: SINTER</a>
      */
-    public <T> Set<T> intersectSet(final String key, final String... others){
+    public <T> Set<T> intersectSet(String key, String... others){
         return redisTemplate.opsForSet().intersect(key, List.of(others));
     }
 
     /**
      * @see <a href="https://redis.io/commands/sinterstore">Redis Documentation: SINTERSTORE</a>
      */
-    public Long intersectSetAndStore(final String destKey, final Collection<String> keys){
+    public Long intersectSetAndStore(String destKey, Collection<String> keys){
         return redisTemplate.opsForSet().intersectAndStore(keys, destKey);
     }
 
     /**
      * @see <a href="https://redis.io/commands/sinterstore">Redis Documentation: SINTERSTORE</a>
      */
-    public Long intersectSetAndStore(final String destKey, final String... keys){
+    public Long intersectSetAndStore(String destKey, String... keys){
         return redisTemplate.opsForSet().intersectAndStore(List.of(keys), destKey);
     }
 
     /**
      * @see <a href="https://redis.io/commands/sunion">Redis Documentation: SUNION</a>
      */
-    public <T> Set<T> unionSet(final Collection<String> keys){
+    public <T> Set<T> unionSet(Collection<String> keys){
         return redisTemplate.opsForSet().union(keys);
     }
 
     /**
      * @see <a href="https://redis.io/commands/sunion">Redis Documentation: SUNION</a>
      */
-    public <T> Set<T> unionSet(final String key, final Collection<String> others){
+    public <T> Set<T> unionSet(String key, Collection<String> others){
         return redisTemplate.opsForSet().union(key, others);
     }
 
     /**
      * @see <a href="https://redis.io/commands/sunion">Redis Documentation: SUNION</a>
      */
-    public <T> Set<T> unionSet(final String key, final String... others){
+    public <T> Set<T> unionSet(String key, String... others){
         return redisTemplate.opsForSet().union(key, List.of(others));
     }
 
     /**
      * @see <a href="https://redis.io/commands/sunionstore">Redis Documentation: SUNIONSTORE</a>
      */
-    public Long unionSetAndStore(final String destKey, final Collection<String> keys){
+    public Long unionSetAndStore(String destKey, Collection<String> keys){
         return redisTemplate.opsForSet().unionAndStore(keys, destKey);
     }
 
     /**
      * @see <a href="https://redis.io/commands/sunionstore">Redis Documentation: SUNIONSTORE</a>
      */
-    public Long unionSetAndStore(final String destKey, final String... keys){
+    public Long unionSetAndStore(String destKey, String... keys){
         return redisTemplate.opsForSet().unionAndStore(List.of(keys), destKey);
     }
 
     /**
      * @see <a href="https://redis.io/commands/sdiff">Redis Documentation: SDIFF</a>
      */
-    public <T> Set<T> diffSet(final String key, final String... others){
+    public <T> Set<T> diffSet(String key, String... others){
         return redisTemplate.opsForSet().difference(key, List.of(others));
     }
 
     /**
      * @see <a href="https://redis.io/commands/sdiff">Redis Documentation: SDIFF</a>
      */
-    public <T> Set<T> diffSet(final String key, final Collection<String> others){
+    public <T> Set<T> diffSet(String key, Collection<String> others){
         return redisTemplate.opsForSet().difference(key, others);
     }
 
     /**
      * @see <a href="https://redis.io/commands/sdiffstore">Redis Documentation: SDIFFSTORE</a>
      */
-    public Long diffSetAndStore(final String destKey, final String key, final String... others){
+    public Long diffSetAndStore(String destKey, String key, String... others){
         return redisTemplate.opsForSet().differenceAndStore(key, List.of(others), destKey);
     }
 
     /**
      * @see <a href="https://redis.io/commands/sdiffstore">Redis Documentation: SDIFFSTORE</a>
      */
-    public Long diffSetAndStore(final String destKey, final String key, final Collection<String> others){
+    public Long diffSetAndStore(String destKey, String key, Collection<String> others){
         return redisTemplate.opsForSet().differenceAndStore(key, others, destKey);
     }
 
     /**
      * @see <a href="https://redis.io/commands/srem">Redis Documentation: SREM</a>
      */
-    public void removeFromSet(final String key, final Object... values){
+    public void removeFromSet(String key, Object... values){
         BoundSetOperations<String, Object> setOperation = redisTemplate.boundSetOps(key);
         setOperation.remove(values);
     }
@@ -714,35 +714,35 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/zcard">Redis Documentation: ZCARD</a>
      */
-    public Long sizeOfZset(final String key) {
+    public Long sizeOfZset(String key) {
         return redisTemplate.opsForZSet().size(key);
     }
 
     /**
      * @see <a href="https://redis.io/commands/zcount">Redis Documentation: ZCOUNT</a>
      */
-    public Long countZsetByScore(final String key, double min, double max) {
+    public Long countZsetByScore(String key, double min, double max) {
         return redisTemplate.opsForZSet().count(key, min, max);
     }
 
     /**
      * @see <a href="https://redis.io/commands/zrank">Redis Documentation: ZRANK</a>
      */
-    public <T> Long rankOfZset(final String key, final T value){
+    public <T> Long rankOfZset(String key, T value){
         return redisTemplate.opsForZSet().rank(key, value);
     }
 
     /**
      * @see <a href="https://redis.io/commands/zscore">Redis Documentation: ZSCORE</a>
      */
-    public <T> Boolean memberOfZset(final String key, final T value) {
+    public <T> Boolean memberOfZset(String key, T value) {
         return redisTemplate.opsForZSet().score(key, value) != null;
     }
 
     /**
      * @see <a href="https://redis.io/commands/zrange">Redis Documentation: ZRANGE</a>
      */
-    public <T> T firstOfZset(final String key){
+    public <T> T firstOfZset(String key){
         Set<T> set = redisTemplate.opsForZSet().range(key, 0, 0);
         if (set != null && !set.isEmpty()) {
             return set.iterator().next();
@@ -753,63 +753,63 @@ public class RedisHelper{
     /**
      * @see <a href="https://redis.io/commands/zrange">Redis Documentation: ZRANGE</a>
      */
-    public <T> Set<T> rangeOfZset(final String key, final long start, final long end){
+    public <T> Set<T> rangeOfZset(String key, long start, long end){
         return redisTemplate.opsForZSet().range(key, start, end);
     }
 
     /**
      * @see <a href="https://redis.io/commands/zrangebyscore">Redis Documentation: ZRANGEBYSCORE</a>
      */
-    public <T> Set<T> rangeOfZsetByScore(final String key, double min, double max){
+    public <T> Set<T> rangeOfZsetByScore(String key, double min, double max){
         return redisTemplate.opsForZSet().rangeByScore(key, min, max);
     }
 
     /**
      * @see <a href="https://redis.io/commands/zpopmin">Redis Documentation: ZPOPMIN</a>
      */
-    public <T> ZSetOperations.TypedTuple<T> popMinOfZset(final String key){
+    public <T> ZSetOperations.TypedTuple<T> popMinOfZset(String key){
         return redisTemplate.opsForZSet().popMin(key);
     }
 
     /**
      * @see <a href="https://redis.io/commands/bzpopmin">Redis Documentation: BZPOPMIN</a>
      */
-    public <T> ZSetOperations.TypedTuple<T> popMinOfZset(final String key, long timeout, TimeUnit timeUnit){
+    public <T> ZSetOperations.TypedTuple<T> popMinOfZset(String key, long timeout, TimeUnit timeUnit){
         return redisTemplate.opsForZSet().popMin(key, timeout, timeUnit);
     }
 
     /**
      * @see <a href="https://redis.io/commands/zpopmin">Redis Documentation: ZPOPMAX</a>
      */
-    public <T> ZSetOperations.TypedTuple<T> popMaxOfZset(final String key){
+    public <T> ZSetOperations.TypedTuple<T> popMaxOfZset(String key){
         return redisTemplate.opsForZSet().popMax(key);
     }
 
     /**
      * @see <a href="https://redis.io/commands/bzpopmin">Redis Documentation: BZPOPMAX</a>
      */
-    public <T> ZSetOperations.TypedTuple<T> popMaxOfZset(final String key, long timeout, TimeUnit timeUnit){
+    public <T> ZSetOperations.TypedTuple<T> popMaxOfZset(String key, long timeout, TimeUnit timeUnit){
         return redisTemplate.opsForZSet().popMax(key, timeout, timeUnit);
     }
 
     /**
      * @see <a href="https://redis.io/commands/zadd">Redis Documentation: ZADD</a>
      */
-    public <T> void putZset(final String key, final T value, final double score){
+    public <T> void putZset(String key, T value, double score){
         redisTemplate.opsForZSet().add(key, value, score);
     }
 
     /**
      * @see <a href="https://redis.io/commands/zrem">Redis Documentation: ZREM</a>
      */
-    public void removeFromZset(final String key, final Object... values){
+    public void removeFromZset(String key, Object... values){
         redisTemplate.opsForZSet().remove(key, values);
     }
 
     /**
      * @see <a href="https://redis.io/commands/zremrangebyscore">Redis Documentation: ZREMRANGEBYSCORE</a>
      */
-    public void removeFromZsetByScore(final String key, final double min, final double max){
+    public void removeFromZsetByScore(String key, double min, double max){
         redisTemplate.opsForZSet().removeRangeByScore(key, min, max);
     }
 
