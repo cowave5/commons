@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017～2024 Cowave All Rights Reserved.
+ * Copyright (c) 2017～2025 Cowave All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  *
@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.cowave.commons.response.exception.Asserts;
+import com.cowave.commons.client.http.asserts.Asserts;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionCommands;

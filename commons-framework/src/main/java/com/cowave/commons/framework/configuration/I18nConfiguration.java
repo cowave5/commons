@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017～2024 Cowave All Rights Reserved.
+ * Copyright (c) 2017～2025 Cowave All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  *
@@ -34,7 +34,7 @@ public class I18nConfiguration {
     private static final String FRAMEWORK_MESSAGES = "META-INF/i18n/messages-frame";
 
     @Bean
-    public ResourceBundleMessageSource messageSource(@Value("${spring.messages.basename:}") String messages) {
+    public MessageSource messageSource(@Value("${spring.messages.basename:}") String messages) {
         String[] array;
         if(StringUtils.isNotBlank(messages)){
             array = Stream.concat(

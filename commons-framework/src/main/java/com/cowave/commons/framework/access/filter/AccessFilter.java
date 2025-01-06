@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017～2024 Cowave All Rights Reserved.
+ * Copyright (c) 2017～2025 Cowave All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  *
@@ -9,11 +9,11 @@
  */
 package com.cowave.commons.framework.access.filter;
 
+import com.cowave.commons.client.http.asserts.I18Messages;
+import com.cowave.commons.client.http.response.Response;
 import com.cowave.commons.framework.access.Access;
 import com.cowave.commons.framework.access.AccessLogger;
 import com.cowave.commons.framework.access.AccessProperties;
-import com.cowave.commons.response.Response;
-import com.cowave.commons.response.exception.Messages;
 import com.cowave.commons.tools.ServletUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Field;
 
-import static com.cowave.commons.response.HttpResponseCode.BAD_REQUEST;
-import static com.cowave.commons.response.HttpResponseCode.SUCCESS;
+import static com.cowave.commons.client.http.constants.HttpCode.BAD_REQUEST;
+import static com.cowave.commons.client.http.constants.HttpCode.SUCCESS;
 
 /**
  *
@@ -77,7 +77,7 @@ public class AccessFilter implements Filter {
         // 设置MDC.accessId
         MDC.put("accessId", accessId);
         // 设置国际化
-        Messages.setLanguage(language);
+        I18Messages.setLanguage(language);
         // 设置Seata事务id
         if(transactionIdSetter != null && xid != null){
             transactionIdSetter.setXid(xid);
@@ -102,7 +102,7 @@ public class AccessFilter implements Filter {
             httpResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
             httpResponse.setStatus(httpStatus);
             response.getWriter().write(objectMapper.writeValueAsString(
-                    Response.msg(BAD_REQUEST, Messages.msg("frame.advice.httpMessageConversionException"))));
+                    Response.msg(BAD_REQUEST, I18Messages.msg("frame.advice.httpMessageConversionException"))));
             return;
         }
 

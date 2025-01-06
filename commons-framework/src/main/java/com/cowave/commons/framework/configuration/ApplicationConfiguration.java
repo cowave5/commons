@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017～2024 Cowave All Rights Reserved.
+ * Copyright (c) 2017～2025 Cowave All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  *
@@ -9,13 +9,11 @@
  */
 package com.cowave.commons.framework.configuration;
 
-import com.cowave.commons.response.exception.Messages;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -56,10 +54,5 @@ public class ApplicationConfiguration implements ApplicationContextInitializer<C
             log.error("failed to load: " + PATH_YAML, e);
             System.exit(-1);
         }
-    }
-
-    @javax.annotation.Resource
-    public void setMessageSource(MessageSource messageSource) {
-        Messages.setMessageSource(messageSource);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017～2024 Cowave All Rights Reserved.
+ * Copyright (c) 2017～2025 Cowave All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  *
@@ -14,8 +14,8 @@ import cn.hutool.extra.validation.ValidationUtil;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
-import com.cowave.commons.response.exception.Messages;
-import com.cowave.commons.response.exception.AssertsException;
+import com.cowave.commons.client.http.asserts.AssertsException;
+import com.cowave.commons.client.http.asserts.I18Messages;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -48,7 +48,7 @@ public class ExcelImportValidListener<T> extends AnalysisEventListener<T> {
     }
 
     private void valid(Object bean, AnalysisContext context) {
-        StringBuilder failedBuilder = new StringBuilder(Messages.msg("frame.import.failed.msg"));
+        StringBuilder failedBuilder = new StringBuilder(I18Messages.msg("frame.import.failed.msg"));
         Field[] fields = bean.getClass().getDeclaredFields();
         boolean validFailed = false;
         for (Field field : fields) {
@@ -69,6 +69,6 @@ public class ExcelImportValidListener<T> extends AnalysisEventListener<T> {
     }
 
     private String getMessage(int rowIndex, String message){
-        return Messages.msg("frame.excel.failed.row", rowIndex, message);
+        return I18Messages.msg("frame.excel.failed.row", rowIndex, message);
     }
 }

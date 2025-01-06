@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017～2024 Cowave All Rights Reserved.
+ * Copyright (c) 2017～2025 Cowave All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  *
@@ -9,7 +9,7 @@
  */
 package com.cowave.commons.framework.helper.rest;
 
-import com.cowave.commons.response.ssl.NoopTlsSocketFactory;
+import com.cowave.commons.client.http.request.ssl.NoopTlsSocketFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.NoHttpResponseException;

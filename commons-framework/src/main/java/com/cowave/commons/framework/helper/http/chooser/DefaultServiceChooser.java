@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017～2024 Cowave All Rights Reserved.
+ * Copyright (c) 2017～2025 Cowave All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  *
@@ -7,10 +7,10 @@
  *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
-package com.cowave.commons.framework.helper.feign.chooser;
+package com.cowave.commons.framework.helper.http.chooser;
 
+import com.cowave.commons.client.http.HttpServiceChooser;
 import lombok.RequiredArgsConstructor;
-import org.springframework.feign.FeignServiceChooser;
 
 /**
  *
@@ -18,7 +18,7 @@ import org.springframework.feign.FeignServiceChooser;
  *
  */
 @RequiredArgsConstructor
-public class DefaultServiceChooser implements FeignServiceChooser {
+public class DefaultServiceChooser implements HttpServiceChooser {
 
     private final EurekaServiceChooser eurekaServiceChooser;
 

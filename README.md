@@ -1,7 +1,7 @@
 [![Build Status](https://github.com/cowave5/commons/actions/workflows/maven.yml/badge.svg?branch=master)](https://github.com/cowave5/commons/actions)
 ![Static Badge](https://img.shields.io/badge/Java-17-brightgreen)
 ![Static Badge](https://img.shields.io/badge/spring--boot-2.7.0-brightgreen)
-![Maven central](https://img.shields.io/badge/maven--central-2.7.5-brightgreen)
+![Maven central](https://img.shields.io/badge/maven--central-2.7.6-brightgreen)
 [![License](https://img.shields.io/badge/license-Apache--2.0-brightgreen)](http://www.apache.org/licenses/LICENSE-2.0.txt)
 
 ## commons
@@ -40,7 +40,7 @@ mvn archetype:generate                \
 -DinteractiveMode=false               \
 -DarchetypeGroupId=com.cowave.commons \
 -DarchetypeArtifactId=archetype-mvc   \
--DarchetypeVersion=2.7.5              \
+-DarchetypeVersion=2.7.6              \
 -DgroupId=com.cowave.demo      \
 -DartifactId=demo-mvc          \
 -Dversion=1.0.0                \
@@ -97,7 +97,7 @@ mvn archetype:generate                \
 -DinteractiveMode=false               \
 -DarchetypeGroupId=com.cowave.commons \
 -DarchetypeArtifactId=archetype-ddd   \
--DarchetypeVersion=2.7.5              \
+-DarchetypeVersion=2.7.6              \
 -DgroupId=com.cowave.demo      \
 -DartifactId=demo-ddd          \
 -Dversion=1.0.0                \

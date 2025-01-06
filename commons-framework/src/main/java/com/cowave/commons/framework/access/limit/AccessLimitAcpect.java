@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017～2024 Cowave All Rights Reserved.
+ * Copyright (c) 2017～2025 Cowave All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  *
@@ -9,10 +9,10 @@
  */
 package com.cowave.commons.framework.access.limit;
 
+import com.cowave.commons.client.http.asserts.HttpHintException;
 import com.cowave.commons.framework.access.Access;
 import com.cowave.commons.framework.access.AccessProperties;
 import com.cowave.commons.framework.configuration.ApplicationProperties;
-import com.cowave.commons.response.exception.HttpHintException;
 import com.cowave.commons.tools.ServletUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -32,8 +32,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
 
-import static com.cowave.commons.response.HttpResponseCode.SUCCESS;
-import static com.cowave.commons.response.HttpResponseCode.TOO_MANY_REQUESTS;
+import static com.cowave.commons.client.http.constants.HttpCode.SUCCESS;
+import static com.cowave.commons.client.http.constants.HttpCode.TOO_MANY_REQUESTS;
 
 /**
  *
