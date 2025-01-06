@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017～2024 Cowave All Rights Reserved.
+ * Copyright (c) 2017～2025 Cowave All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  *
@@ -10,15 +10,15 @@
 package com.cowave.commons.framework.access.security;
 
 import cn.hutool.core.util.IdUtil;
+import com.cowave.commons.client.http.asserts.HttpHintException;
+import com.cowave.commons.client.http.asserts.I18Messages;
+import com.cowave.commons.client.http.response.Response;
+import com.cowave.commons.client.http.response.ResponseCode;
 import com.cowave.commons.framework.access.Access;
 import com.cowave.commons.framework.access.AccessProperties;
 import com.cowave.commons.framework.access.filter.AccessIdGenerator;
 import com.cowave.commons.framework.configuration.ApplicationProperties;
 import com.cowave.commons.framework.helper.redis.RedisHelper;
-import com.cowave.commons.response.Response;
-import com.cowave.commons.response.ResponseCode;
-import com.cowave.commons.response.exception.HttpHintException;
-import com.cowave.commons.response.exception.Messages;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -41,7 +41,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import static com.cowave.commons.response.HttpResponseCode.*;
+import static com.cowave.commons.client.http.constants.HttpCode.*;
 
 /**
  *
@@ -375,7 +375,7 @@ public class BearerTokenService {
         response.setCharacterEncoding("UTF-8");
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         try(PrintWriter writer = response.getWriter()){
-            writer.write(objectMapper.writeValueAsString(Response.msg(responseCode, Messages.msg(messageKey))));
+            writer.write(objectMapper.writeValueAsString(Response.msg(responseCode, I18Messages.msg(messageKey))));
         }
     }
 }

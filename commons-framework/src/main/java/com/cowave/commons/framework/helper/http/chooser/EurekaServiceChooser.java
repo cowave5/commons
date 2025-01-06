@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017～2024 Cowave All Rights Reserved.
+ * Copyright (c) 2017～2025 Cowave All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  *
@@ -7,13 +7,13 @@
  *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
-package com.cowave.commons.framework.helper.feign.chooser;
+package com.cowave.commons.framework.helper.http.chooser;
 
-import com.alibaba.cloud.nacos.registry.NacosAutoServiceRegistration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.cloud.netflix.eureka.serviceregistry.EurekaAutoServiceRegistration;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -23,10 +23,10 @@ import javax.annotation.Nullable;
  * @author shanhuiming
  *
  */
-@ConditionalOnClass({LoadBalancerClient.class, NacosAutoServiceRegistration.class})
+@ConditionalOnClass({LoadBalancerClient.class, EurekaAutoServiceRegistration.class})
 @RequiredArgsConstructor
 @Component
-public class NacosServiceChooser {
+public class EurekaServiceChooser {
 
     @Nullable
     private final LoadBalancerClient balancerClient;
@@ -36,7 +36,7 @@ public class NacosServiceChooser {
             return null;
         }
 
-        ServiceInstance instance = balancerClient.choose(name);
+        ServiceInstance instance = balancerClient.choose(name.toUpperCase());
         if (instance == null) {
             throw new IllegalArgumentException("service[" + name + "] not exist");
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017～2024 Cowave All Rights Reserved.
+ * Copyright (c) 2017～2025 Cowave All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  *
@@ -9,14 +9,10 @@
  */
 package com.cowave.commons.framework.access;
 
-import com.cowave.commons.response.HttpResponse;
-import com.cowave.commons.response.exception.HttpWarnException;
-import com.cowave.commons.response.Response;
-import com.cowave.commons.response.exception.Messages;
+import com.cowave.commons.client.http.asserts.*;
+import com.cowave.commons.client.http.response.HttpResponse;
+import com.cowave.commons.client.http.response.Response;
 import com.cowave.commons.tools.*;
-import com.cowave.commons.response.exception.AssertsException;
-import com.cowave.commons.response.exception.HttpHintException;
-import com.cowave.commons.response.exception.HttpException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
@@ -41,7 +37,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.cowave.commons.response.HttpResponseCode.*;
+import static com.cowave.commons.client.http.constants.HttpCode.*;
 
 /**
  *
@@ -86,17 +82,17 @@ public class AccessAdvice {
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public HttpResponse<Response<Void>> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException e) {
-        return error(e, BAD_REQUEST.getStatus(), BAD_REQUEST.getCode(), ERR_LEVEL_0, Messages.msg("frame.advice.httpRequestMethodNotSupportedException"));
+        return error(e, BAD_REQUEST.getStatus(), BAD_REQUEST.getCode(), ERR_LEVEL_0, I18Messages.msg("frame.advice.httpRequestMethodNotSupportedException"));
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public HttpResponse<Response<Void>> handleBadCredentialsException(BadCredentialsException e) {
-        return error(e, UNAUTHORIZED.getStatus(), UNAUTHORIZED.getCode(), ERR_LEVEL_0, Messages.msg("frame.auth.failed.passwd"));
+        return error(e, UNAUTHORIZED.getStatus(), UNAUTHORIZED.getCode(), ERR_LEVEL_0, I18Messages.msg("frame.auth.failed.passwd"));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public HttpResponse<Response<Void>> handleAccessDeniedException(AccessDeniedException e) {
-        return error(e, FORBIDDEN.getStatus(), FORBIDDEN.getCode(), ERR_LEVEL_0, Messages.msg("frame.auth.denied"));
+        return error(e, FORBIDDEN.getStatus(), FORBIDDEN.getCode(), ERR_LEVEL_0, I18Messages.msg("frame.auth.denied"));
     }
 
     @ExceptionHandler(HttpHintException.class)
@@ -119,17 +115,17 @@ public class AccessAdvice {
 
     @ExceptionHandler(AuthenticationException.class)
     public HttpResponse<Response<Void>> handleAuthenticationException(AuthenticationException e) {
-        return error(e, UNAUTHORIZED.getStatus(), UNAUTHORIZED.getCode(), ERR_LEVEL_2, Messages.msg("frame.auth.failed"));
+        return error(e, UNAUTHORIZED.getStatus(), UNAUTHORIZED.getCode(), ERR_LEVEL_2, I18Messages.msg("frame.auth.failed"));
     }
 
     @ExceptionHandler(HttpMessageConversionException.class)
     public HttpResponse<Response<Void>> handleHttpMessageConversionException(HttpMessageConversionException e) {
-        return error(e, BAD_REQUEST.getStatus(), BAD_REQUEST.getCode(), ERR_LEVEL_2, Messages.msg("frame.advice.httpMessageConversionException"));
+        return error(e, BAD_REQUEST.getStatus(), BAD_REQUEST.getCode(), ERR_LEVEL_2, I18Messages.msg("frame.advice.httpMessageConversionException"));
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public HttpResponse<Response<Void>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
-        return error(e, BAD_REQUEST.getStatus(), BAD_REQUEST.getCode(), ERR_LEVEL_2, Messages.msg("frame.advice.methodArgumentTypeMismatchException"));
+        return error(e, BAD_REQUEST.getStatus(), BAD_REQUEST.getCode(), ERR_LEVEL_2, I18Messages.msg("frame.advice.methodArgumentTypeMismatchException"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -166,27 +162,27 @@ public class AccessAdvice {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public HttpResponse<Response<Void>> handleIllegalArgumentException(IllegalArgumentException e) {
-        return error(e, INTERNAL_SERVER_ERROR.getStatus(), INTERNAL_SERVER_ERROR.getCode(), ERR_LEVEL_3, Messages.msg("frame.advice.illegalArgumentException"));
+        return error(e, INTERNAL_SERVER_ERROR.getStatus(), INTERNAL_SERVER_ERROR.getCode(), ERR_LEVEL_3, I18Messages.msg("frame.advice.illegalArgumentException"));
     }
 
     @ExceptionHandler(SQLException.class)
     public HttpResponse<Response<Void>> handleSqlException(SQLException e) {
-        return error(e, INTERNAL_SERVER_ERROR.getStatus(), INTERNAL_SERVER_ERROR.getCode(), ERR_LEVEL_3, Messages.msg("frame.advice.sqlException"));
+        return error(e, INTERNAL_SERVER_ERROR.getStatus(), INTERNAL_SERVER_ERROR.getCode(), ERR_LEVEL_3, I18Messages.msg("frame.advice.sqlException"));
     }
 
     @ExceptionHandler(DuplicateKeyException.class)
     public HttpResponse<Response<Void>> handleDuplicateKeyException(DuplicateKeyException e) {
-        return error(e, INTERNAL_SERVER_ERROR.getStatus(), INTERNAL_SERVER_ERROR.getCode(), ERR_LEVEL_3, Messages.msg("frame.advice.duplicateKeyException"));
+        return error(e, INTERNAL_SERVER_ERROR.getStatus(), INTERNAL_SERVER_ERROR.getCode(), ERR_LEVEL_3, I18Messages.msg("frame.advice.duplicateKeyException"));
     }
 
     @ExceptionHandler(DataAccessException.class)
     public HttpResponse<Response<Void>> handleDataAccessException(DataAccessException e) {
-        return error(e, INTERNAL_SERVER_ERROR.getStatus(), INTERNAL_SERVER_ERROR.getCode(), ERR_LEVEL_3, Messages.msg("frame.advice.dataAccessException"));
+        return error(e, INTERNAL_SERVER_ERROR.getStatus(), INTERNAL_SERVER_ERROR.getCode(), ERR_LEVEL_3, I18Messages.msg("frame.advice.dataAccessException"));
     }
 
     @ExceptionHandler(Exception.class)
     public HttpResponse<Response<Void>> handleException(Exception e) {
-        return error(e, INTERNAL_SERVER_ERROR.getStatus(), INTERNAL_SERVER_ERROR.getCode(), ERR_LEVEL_3, Messages.msg("frame.advice.exception"));
+        return error(e, INTERNAL_SERVER_ERROR.getStatus(), INTERNAL_SERVER_ERROR.getCode(), ERR_LEVEL_3, I18Messages.msg("frame.advice.exception"));
     }
 
     private HttpResponse<Response<Void>> error(Exception e, int httpStatus, String code, int errLevel, String message) {

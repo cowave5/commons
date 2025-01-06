@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017～2024 Cowave All Rights Reserved.
+ * Copyright (c) 2017～2025 Cowave All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  *
@@ -13,10 +13,10 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.cowave.commons.client.http.response.HttpResponse;
+import com.cowave.commons.client.http.response.Response;
 import com.cowave.commons.framework.access.filter.AccessIdGenerator;
 import com.cowave.commons.framework.access.security.AccessInfoParser;
-import com.cowave.commons.response.HttpResponse;
-import com.cowave.commons.response.Response;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static com.cowave.commons.response.HttpResponseCode.SUCCESS;
+import static com.cowave.commons.client.http.constants.HttpCode.SUCCESS;
 
 /**
  *

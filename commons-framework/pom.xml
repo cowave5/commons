@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.cowave.commons</groupId>
         <artifactId>commons-dependencies</artifactId>
-        <version>2.7.5</version>
+        <version>2.7.6</version>
         <relativePath>../commons-dependencies/pom.xml</relativePath>
     </parent>
 
@@ -121,17 +121,10 @@
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
         </dependency>
-        <!---->
-        <!-- spring-feign -->
+        <!-- schedule-fom -->
         <dependency>
             <groupId>com.cowave.commons</groupId>
-            <artifactId>spring-feign</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <!-- spring-fom -->
-        <dependency>
-            <groupId>com.cowave.commons</groupId>
-            <artifactId>spring-fom</artifactId>
+            <artifactId>schedule-fom</artifactId>
             <scope>provided</scope>
         </dependency>
         <!-- mybatis -->

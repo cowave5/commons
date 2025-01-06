@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017～2024 Cowave All Rights Reserved.
+ * Copyright (c) 2017～2025 Cowave All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  *
@@ -9,10 +9,10 @@
  */
 package com.cowave.commons.framework.configuration;
 
+import com.cowave.commons.schedule.fom.ScheduleContext;
+import com.cowave.commons.schedule.fom.annotation.EnableFom;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.fom.ScheduleContext;
-import org.springframework.fom.annotation.EnableFom;
 
 /**
  *

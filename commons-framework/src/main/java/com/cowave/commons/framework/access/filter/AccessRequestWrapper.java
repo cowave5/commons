@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017～2024 Cowave All Rights Reserved.
+ * Copyright (c) 2017～2025 Cowave All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  *
@@ -48,8 +48,6 @@ public class AccessRequestWrapper extends HttpServletRequestWrapper {
 
     private String body = "";
 
-    private final String methodName;
-
     private final String contentType;
 
     private final ObjectMapper objectMapper;
@@ -61,7 +59,6 @@ public class AccessRequestWrapper extends HttpServletRequestWrapper {
         this.objectMapper = objectMapper;
         this.objectWriter = objectMapper.writer(new SimpleFilterProvider().addFilter(
                 "passwdFilter", SimpleBeanPropertyFilter.serializeAllExcept("password", "passwd")));
-        this.methodName = getMethod();
         this.contentType = getContentType();
         setCharacterEncoding("UTF-8");
         setCharacterEncoding("UTF-8");
@@ -134,12 +131,12 @@ public class AccessRequestWrapper extends HttpServletRequestWrapper {
         Map<String, Object> requestParams = new HashMap<>();
         // 请求日志
         StringBuilder logBuilder = new StringBuilder();
-        logBuilder.append(">> ").append(methodName).append(" ").append(url).append(" <").append(remote);
+        logBuilder.append(">> ").append(getProtocol()).append(" ").append(getMethod()).append(" ").append(url);
         if(StringUtils.isNotBlank(contentType)){
-            logBuilder.append(" ").append(contentType).append(">");
-        }else{
-            logBuilder.append(">");
+            logBuilder.append(" ").append(contentType);
         }
+        logBuilder.append(" ").append(remote);
+
         if(!paramMap.isEmpty()){
             requestParams.put("params", paramMap);
             logBuilder.append(" params=").append(objectWriter.writeValueAsString(paramMap));

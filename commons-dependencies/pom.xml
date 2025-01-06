@@ -3,7 +3,7 @@
 
     <groupId>com.cowave.commons</groupId>
     <artifactId>commons-dependencies</artifactId>
-    <version>2.7.5</version>
+    <version>2.7.6</version>
     <packaging>pom</packaging>
 
     <name>commons-dependencies</name>
@@ -43,7 +43,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skip.pmd>false</skip.pmd>
-        <cowave.commons.version>2.7.5</cowave.commons.version>
+        <cowave.commons.version>2.7.6</cowave.commons.version>
         <spring.boot.version>2.7.0</spring.boot.version>
         <spring.cloud.version>3.1.5</spring.cloud.version>
         <grpc.version>1.48.2</grpc.version>
@@ -253,7 +253,7 @@
                             </includes>
                             <inlineHeader>
 <![CDATA[
-Copyright (c) 2017～2024 Cowave All Rights Reserved.
+Copyright (c) 2017～2025 Cowave All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
@@ -585,22 +585,6 @@ Unless required by applicable law or agreed to in writing, software distributed 
                 <artifactId>spring-boot-starter-data-mongodb</artifactId>
                 <version>${spring.boot.version}</version>
             </dependency>
-            <!-- elasticsearch -->
-            <dependency>
-                <groupId>org.dromara.easy-es</groupId>
-                <artifactId>easy-es-boot-starter</artifactId>
-                <version>2.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.elasticsearch</groupId>
-                <artifactId>elasticsearch</artifactId>
-                <version>7.14.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.elasticsearch.client</groupId>
-                <artifactId>elasticsearch-rest-high-level-client</artifactId>
-                <version>7.14.0</version>
-            </dependency>
             <!-- flowable -->
             <dependency>
                 <groupId>org.flowable</groupId>
@@ -658,6 +642,12 @@ Unless required by applicable law or agreed to in writing, software distributed 
                 <artifactId>commons-io</artifactId>
                 <version>2.14.0</version>
             </dependency>
+            <!-- commons-text -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-text</artifactId>
+                <version>1.10.0</version>
+            </dependency>
             <dependency>
                 <groupId>commons-collections</groupId>
                 <artifactId>commons-collections</artifactId>
@@ -676,7 +666,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
             <!-- cowave.commons -->
             <dependency>
                 <groupId>com.cowave.commons</groupId>
-                <artifactId>commons-response</artifactId>
+                <artifactId>commons-framework</artifactId>
                 <version>${cowave.commons.version}</version>
             </dependency>
             <dependency>
@@ -686,23 +676,18 @@ Unless required by applicable law or agreed to in writing, software distributed 
             </dependency>
             <dependency>
                 <groupId>com.cowave.commons</groupId>
-                <artifactId>commons-framework</artifactId>
-                <version>${cowave.commons.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.cowave.commons</groupId>
-                <artifactId>dtm-client</artifactId>
+                <artifactId>http-client</artifactId>
                 <version>2.7.5</version>
             </dependency>
             <dependency>
                 <groupId>com.cowave.commons</groupId>
-                <artifactId>spring-feign</artifactId>
-                <version>2.7.4</version>
+                <artifactId>dtm-client</artifactId>
+                <version>2.7.6</version>
             </dependency>
             <dependency>
                 <groupId>com.cowave.commons</groupId>
-                <artifactId>spring-fom</artifactId>
-                <version>2.7.2</version>
+                <artifactId>schedule-fom</artifactId>
+                <version>2.7.3</version>
             </dependency>
             <!-- javax -->
             <dependency>

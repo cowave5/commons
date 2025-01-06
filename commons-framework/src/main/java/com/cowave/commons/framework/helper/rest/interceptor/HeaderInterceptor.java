@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017～2024 Cowave All Rights Reserved.
+ * Copyright (c) 2017～2025 Cowave All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  *
@@ -9,12 +9,12 @@
  */
 package com.cowave.commons.framework.helper.rest.interceptor;
 
+import com.cowave.commons.client.http.asserts.I18Messages;
 import com.cowave.commons.framework.access.Access;
 import com.cowave.commons.framework.access.AccessProperties;
 import com.cowave.commons.framework.access.security.BearerTokenService;
 import com.cowave.commons.framework.configuration.ApplicationProperties;
 import com.cowave.commons.framework.access.security.AccessUserDetails;
-import com.cowave.commons.response.exception.Messages;
 import com.cowave.commons.tools.ids.IdGenerator;
 
 import lombok.RequiredArgsConstructor;
@@ -57,7 +57,7 @@ public class HeaderInterceptor implements ClientHttpRequestInterceptor {
         request.getHeaders().add("X-Request-ID", accessId);
 
         // Header Accept-Language
-        request.getHeaders().add("Accept-Language", Messages.getLanguage().getLanguage());
+        request.getHeaders().add("Accept-Language", I18Messages.getLanguage().getLanguage());
 
         // Header Token
         if (!request.getHeaders().containsKey(accessProperties.tokenKey())) {

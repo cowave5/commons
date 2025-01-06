@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017～2024 Cowave All Rights Reserved.
+ * Copyright (c) 2017～2025 Cowave All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  *
@@ -32,7 +32,7 @@ public class CowaveBanner implements Banner {
 
     @Override
     public void printBanner(Environment environment, Class<?> sourceClass, PrintStream out) {
-        String appInfo = ":: Spring Boot 2.7.0";
+        String appInfo = ":: Spring Boot 2.7.0 :: Commons 2.7.6 :: ";
         Resource resource = new DefaultResourceLoader().getResource("classpath:META-INF/git.info");
         if (resource.exists()) {
             try (InputStream input = resource.getInputStream()) {
@@ -40,14 +40,14 @@ public class CowaveBanner implements Banner {
                 String appName = (String) json.get("app.name");
                 String appVersion = (String) json.get("app.version");
                 String buildTime = (String) json.get("build.time");
-                String gitId = (String) json.get("git.commit.id");
+                String gitId = (String) json.get("git.commit.id.abbrev");
                 String gitBranch = (String) json.get("git.branch");
                 if (StringUtils.isNotBlank(appName) && StringUtils.isNotBlank(gitBranch)) {
-                    appInfo = appInfo + " :: " + appName + " " + appVersion + " :: build(" + buildTime + " " + gitBranch + " " + gitId + ") ";
+                    appInfo = appInfo + appName + " " + appVersion + " :: build(" + buildTime + " " + gitBranch + " " + gitId + ") ";
                 } else if (StringUtils.isNotBlank(appName)) {
-                    appInfo = appInfo + " :: " + appName + " " + appVersion + " :: build(" + buildTime + ") ";
+                    appInfo = appInfo + appName + " " + appVersion + " :: build(" + buildTime + ") ";
                 } else if (StringUtils.isNotBlank(gitBranch)) {
-                    appInfo = appInfo + " :: " + "build(" + gitBranch + " " + gitId + ") ";
+                    appInfo = appInfo + "build(" + gitBranch + " " + gitId + ") ";
                 }
             } catch (Exception e) {
                 log.error("", e);
@@ -69,7 +69,7 @@ public class CowaveBanner implements Banner {
                 "|  |      |  |  |  |  \\            / /  /_\\  \\  \\      /   |   __|\n" +
                 "|  `----  |  `--'  |   \\    /\\    / /  _____  \\  \\    /    |  |____\n" +
                 " \\______|  \\______/     \\__/  \\__/ /__/     \\__\\  \\__/     |_______|\n" +
-                appInfo + "\n" +
+                appInfo + "Copyright ©2017-06-30 Cowave All Rights Reserved\n" +
                 ":: OS arch=" + osInfo.getArch() + " name=" + osInfo.getName() + " version=" + osInfo.getVersion() +
                 " :: Host name=" + hostInfo.getName() + " addr=" + hostInfo.getAddress() +
                 " :: User name=" + userName + " lang=" + userInfo.getLanguage() + "-" + userInfo.getCountry() + "\n" +
