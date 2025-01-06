@@ -96,6 +96,16 @@ public class Response<T> {
     }
 
     /**
+     * status=200, code=200, msg="success", data=null
+     */
+    public static <V> Response<V> success(Action action) throws Exception {
+        if (action != null) {
+            action.exec();
+        }
+        return success();
+    }
+
+    /**
      * status=200, code=200, msg="success", data=#{data}
      */
     public static <V> Response<V> success(V data) {

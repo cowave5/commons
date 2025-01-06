@@ -39,7 +39,7 @@ public class HttpException extends RuntimeException {
     }
 
     public HttpException(ResponseCode responseCode) {
-        super(responseCode.getMsg());
+        super(Messages.translateIfNeed(responseCode.getMsg()));
         this.code = responseCode.getCode();
         this.status = responseCode.getStatus();
     }

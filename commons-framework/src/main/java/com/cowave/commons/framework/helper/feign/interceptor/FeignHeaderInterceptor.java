@@ -13,7 +13,7 @@ import com.cowave.commons.framework.access.Access;
 import com.cowave.commons.framework.access.AccessProperties;
 import com.cowave.commons.framework.access.security.BearerTokenService;
 import com.cowave.commons.framework.configuration.ApplicationProperties;
-import com.cowave.commons.framework.helper.rest.interceptor.HeaderInterceptor;
+import com.cowave.commons.framework.helper.rest.interceptor.HeaderInterceptor;import com.cowave.commons.response.exception.Messages;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import lombok.RequiredArgsConstructor;
@@ -43,9 +43,11 @@ public class FeignHeaderInterceptor implements RequestInterceptor {
         String accessId = Access.accessId();
         if (StringUtils.isBlank(accessId)) {
             accessId = HeaderInterceptor.newAccessId(port, applicationProperties);
-            log.debug(">< new access-id: {}", accessId);
         }
         requestTemplate.header("X-Request-ID", accessId);
+
+        // Language
+        requestTemplate.header("Accept-Language", Messages.getLanguage().toLanguageTag());
 
         // Header Token
         if (!requestTemplate.headers().containsKey(accessProperties.tokenKey())) {

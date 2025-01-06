@@ -10,10 +10,13 @@
 package com.cowave.commons.response.exception;
 
 import com.alibaba.ttl.TransmittableThreadLocal;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringSubstitutor;
 import org.springframework.context.MessageSource;
 
 import java.util.Locale;
+import java.util.Map;
 
 /**
  *
@@ -69,5 +72,18 @@ public class Messages {
             return messageSource.getMessage(message, args, message, getLanguage());
         }
         return message;
+    }
+
+    public static String translateAndReplace(String key, Map<String, Object> args, String prefix, String suffix) {
+        if(StringUtils.isBlank(key)){
+            return "";
+        }
+
+        String msg = messageSource.getMessage(key, null, key, getLanguage());
+        if(MapUtils.isNotEmpty(args)){
+            StringSubstitutor substitutor = new StringSubstitutor(args, prefix, suffix);
+            return substitutor.replace(msg);
+        }
+        return msg;
     }
 }
