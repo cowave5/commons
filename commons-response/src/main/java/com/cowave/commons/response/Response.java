@@ -91,6 +91,16 @@ public class Response<T> {
     /**
      * status=200, code=200, msg="success", data=null
      */
+    public static <V> Response<V> action(Runnable runnable) {
+        if (runnable != null) {
+            runnable.run();
+        }
+        return success();
+    }
+
+    /**
+     * status=200, code=200, msg="success", data=null
+     */
     public static <V> Response<V> success() {
         return new Response<>(SUCCESS.getCode(), SUCCESS.getMsg(), null);
     }

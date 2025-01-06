@@ -140,6 +140,16 @@ public class HttpResponse<T> extends ResponseEntity<T> {
     }
 
     /**
+     * status=200, body=null
+     */
+    public static <V> HttpResponse<V> success(Runnable runnable) {
+        if (runnable != null) {
+            runnable.run();
+        }
+        return success();
+    }
+
+    /**
      * status=200, body=#{data}
      */
     public static <V> HttpResponse<V> success(V data) {
