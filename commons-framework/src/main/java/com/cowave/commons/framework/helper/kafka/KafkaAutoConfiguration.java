@@ -45,10 +45,13 @@ public class KafkaAutoConfiguration {
     @Primary
     @Bean
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, Object>> kafkaListenerContainerFactory(KafkaProperties kafkaProperties) {
-        checkAuthProperties(kafkaProperties);
+        String username = checkSecurityProperties(kafkaProperties);
         ConsumerFactory<String, Object> consumerFactory = new DefaultKafkaConsumerFactory<>(kafkaProperties.buildConsumerProperties());
         ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
+        if (StringUtils.isNotBlank(username)) {
+            kafkaProperties.getProperties().put("username", username);
+        }
         return factory;
     }
 
@@ -56,13 +59,16 @@ public class KafkaAutoConfiguration {
     @Primary
     @Bean
     public ProducerFactory<?, ?> producerFactory(KafkaProperties kafkaProperties, ObjectProvider<DefaultKafkaProducerFactoryCustomizer> customizers) {
-        checkAuthProperties(kafkaProperties);
+        String username = checkSecurityProperties(kafkaProperties);
         DefaultKafkaProducerFactory<?, ?> factory = new DefaultKafkaProducerFactory<>(kafkaProperties.buildProducerProperties());
         String transactionIdPrefix = kafkaProperties.getProducer().getTransactionIdPrefix();
         if (transactionIdPrefix != null) {
             factory.setTransactionIdPrefix(transactionIdPrefix);
         }
         customizers.orderedStream().forEach(customizer -> customizer.customize(factory));
+        if (StringUtils.isNotBlank(username)) {
+            kafkaProperties.getProperties().put("username", username);
+        }
         return factory;
     }
 
@@ -84,9 +90,12 @@ public class KafkaAutoConfiguration {
     @Primary
     @Bean
     public KafkaAdmin kafkaAdmin(KafkaProperties kafkaProperties) {
-        checkAuthProperties(kafkaProperties);
+        String username = checkSecurityProperties(kafkaProperties);
         KafkaAdmin kafkaAdmin = new KafkaAdmin(kafkaProperties.buildAdminProperties());
         kafkaAdmin.setFatalIfBrokerNotAvailable(kafkaProperties.getAdmin().isFailFast());
+        if (StringUtils.isNotBlank(username)) {
+            kafkaProperties.getProperties().put("username", username);
+        }
         return kafkaAdmin;
     }
 
@@ -94,10 +103,13 @@ public class KafkaAutoConfiguration {
     @Bean
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, Object>> commonKafkaListenerContainerFactory(Environment environment) {
         KafkaProperties kafkaProperties = Binder.get(environment).bind("common.kafka", KafkaProperties.class).get();
-        checkAuthProperties(kafkaProperties);
+        String username = checkSecurityProperties(kafkaProperties);
         ConsumerFactory<String, Object> consumerFactory = new DefaultKafkaConsumerFactory<>(kafkaProperties.buildConsumerProperties());
         ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
+        if (StringUtils.isNotBlank(username)) {
+            kafkaProperties.getProperties().put("username", username);
+        }
         return factory;
     }
 
@@ -105,13 +117,16 @@ public class KafkaAutoConfiguration {
     @Bean
     public ProducerFactory<?, ?> commonProducerFactory(Environment environment, ObjectProvider<DefaultKafkaProducerFactoryCustomizer> customizers) {
         KafkaProperties kafkaProperties = Binder.get(environment).bind("common.kafka", KafkaProperties.class).get();
-        checkAuthProperties(kafkaProperties);
+        String username = checkSecurityProperties(kafkaProperties);
         DefaultKafkaProducerFactory<?, ?> factory = new DefaultKafkaProducerFactory<>(kafkaProperties.buildProducerProperties());
         String transactionIdPrefix = kafkaProperties.getProducer().getTransactionIdPrefix();
         if (transactionIdPrefix != null) {
             factory.setTransactionIdPrefix(transactionIdPrefix);
         }
         customizers.orderedStream().forEach(customizer -> customizer.customize(factory));
+        if (StringUtils.isNotBlank(username)) {
+            kafkaProperties.getProperties().put("username", username);
+        }
         return factory;
     }
 
@@ -133,16 +148,21 @@ public class KafkaAutoConfiguration {
     @Bean
     public KafkaAdmin commonKafkaAdmin(Environment environment) {
         KafkaProperties kafkaProperties = Binder.get(environment).bind("common.kafka", KafkaProperties.class).get();
-        checkAuthProperties(kafkaProperties);
+        String username = checkSecurityProperties(kafkaProperties);
         KafkaAdmin kafkaAdmin = new KafkaAdmin(kafkaProperties.buildAdminProperties());
         kafkaAdmin.setFatalIfBrokerNotAvailable(kafkaProperties.getAdmin().isFailFast());
+        if (StringUtils.isNotBlank(username)) {
+            kafkaProperties.getProperties().put("username", username);
+        }
         return kafkaAdmin;
     }
 
-    private void checkAuthProperties(KafkaProperties properties) {
-        String userName = properties.getProperties().get("username");
+    // 场景：properties配置了鉴权，但是用户名密码为空会导致报错，这里偷懒使用一个username来标记用户名，为空就去掉鉴权配置项
+    private String checkSecurityProperties(KafkaProperties kafkaProperties) {
+        String userName = kafkaProperties.getProperties().remove("username");
         if (StringUtils.isBlank(userName)) {
-            properties.getProperties().clear();
+            kafkaProperties.getProperties().clear();
         }
+        return userName;
     }
 }

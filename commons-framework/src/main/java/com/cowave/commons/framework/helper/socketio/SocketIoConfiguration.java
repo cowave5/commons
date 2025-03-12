@@ -9,12 +9,18 @@
  */
 package com.cowave.commons.framework.helper.socketio;
 
+import com.corundumstudio.socketio.AuthorizationListener;
 import com.corundumstudio.socketio.SocketConfig;
 import com.corundumstudio.socketio.SocketIOServer;
+import com.corundumstudio.socketio.annotation.SpringAnnotationScanner;
+import com.corundumstudio.socketio.listener.ExceptionListener;
 import com.cowave.commons.framework.access.AccessProperties;
 import com.cowave.commons.framework.access.security.BearerTokenService;
+import com.cowave.commons.framework.helper.socketio.listener.SocketIoAuthorizationListener;
+import com.cowave.commons.framework.helper.socketio.listener.SocketIoExceptionListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,27 +32,35 @@ import javax.annotation.Nullable;
  * @author shanhuiming
  *
  */
+@ConditionalOnProperty(name = "spring.socket-io.enable", havingValue = "true", matchIfMissing = true)
 @ConditionalOnClass(SocketIOServer.class)
+@EnableConfigurationProperties(SocketIoProperties.class)
 @RequiredArgsConstructor
 @Configuration
-@EnableConfigurationProperties(SocketIoProperties.class)
-public class SocketConfiguration {
+public class SocketIoConfiguration {
 
     @Nullable
     private final BearerTokenService bearerTokenService;
 
     @Nullable
-    private final ClientMsgHandler clientMsgHandler;
-
-    @Nullable
-    private final ConnectedHandler connectedHandler;
-
-    private final AccessProperties accessProperties;
+    private final SocketIoEventRegister socketIoEventRegister;
 
     @Bean
-    public SocketIoHelper socketServer(SocketIoProperties properties) {
+    public ExceptionListener exceptionListener(){
+        return new SocketIoExceptionListener();
+    }
+
+    @Bean
+    public AuthorizationListener authorizationListener(AccessProperties accessProperties){
+        return new SocketIoAuthorizationListener(accessProperties, bearerTokenService);
+    }
+
+    @Bean
+    public SocketIOServer socketIoServer(SocketIoProperties properties,
+                                         ExceptionListener exceptionListener,
+                                         AuthorizationListener authorizationListener) {
         com.corundumstudio.socketio.Configuration configuration = new com.corundumstudio.socketio.Configuration();
-        if(properties.getHost() != null){
+        if (properties.getHost() != null) {
             configuration.setHostname(properties.getHost());
         }
         configuration.setPort(properties.getPort());
@@ -59,17 +73,24 @@ public class SocketConfiguration {
         configuration.setAllowCustomRequests(properties.isAllowCustomRequests());
         configuration.setMaxHttpContentLength(properties.getMaxHttpContentLength());
         configuration.setMaxFramePayloadLength(properties.getMaxFramePayloadLength());
-        if(bearerTokenService != null) {
-            configuration.setAuthorizationListener(data -> {
-                String authorization = data.getSingleUrlParam(accessProperties.tokenKey());
-                return bearerTokenService.validAccessJwt(authorization);
-            });
-        }
+
+        configuration.setExceptionListener(exceptionListener);
+        configuration.setAuthorizationListener(authorizationListener);
 
         SocketConfig socket = new SocketConfig();
-        socket.setTcpNoDelay(true);
         socket.setSoLinger(0);
+        socket.setTcpNoDelay(true);
         configuration.setSocketConfig(socket);
-        return new SocketIoHelper(clientMsgHandler, connectedHandler, new SocketIOServer(configuration));
+        return new SocketIOServer(configuration);
+    }
+
+    @Bean
+    public SocketIoHelper socketIoHelper(SocketIoProperties properties, SocketIOServer socketIoServer){
+        return new SocketIoHelper(properties, socketIoServer, socketIoEventRegister);
+    }
+
+    @Bean
+    public SpringAnnotationScanner springAnnotationScanner(SocketIOServer socketIoServer) {
+        return new SpringAnnotationScanner(socketIoServer);
     }
 }

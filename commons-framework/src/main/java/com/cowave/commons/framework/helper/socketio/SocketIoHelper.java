@@ -9,6 +9,8 @@
  */
 package com.cowave.commons.framework.helper.socketio;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,113 +18,244 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import org.springframework.util.CollectionUtils;
-
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
  * @author shanhuiming
  *
  */
+@Slf4j
 @RequiredArgsConstructor
 public class SocketIoHelper {
 
-    private static Map<Integer, SocketIOClient> socketclientMap = new ConcurrentHashMap<>();
+    static Map<String, Map<String, SocketIOClient>> namespcaeClientMap = new ConcurrentHashMap<>();
 
-    private final ClientMsgHandler clientMsgHandler;
+    static Map<String, SocketIOClient> rootClientMap = new ConcurrentHashMap<>();
 
-    private final ConnectedHandler connectedHandler;
+    private final SocketIoProperties properties;
 
-    private final SocketIOServer socketIOServer;
+    private final SocketIOServer socketIoServer;
+
+    private final SocketIoEventRegister socketIoEventRegister;
 
     @PostConstruct
     private void init() {
-        // 连接处理
-        socketIOServer.addConnectListener(client -> {
-            Integer userId = getUserId(client);
-            if (userId != null) {
-                socketclientMap.put(userId, client);
-            }
-            if (connectedHandler != null) {
-                connectedHandler.onConnected(userId, SocketIoHelper.this);
-            }
-        });
-        // 断开处理
-        socketIOServer.addDisconnectListener(client -> {
-            Integer userId = getUserId(client);
-            if (userId != null) {
-                socketclientMap.remove(userId);
-                client.disconnect();
-            }
-        });
-        // 前端消息处理
-        if (clientMsgHandler != null) {
-            String event = clientMsgHandler.getEvent();
-            socketIOServer.addEventListener(event, String.class, (client, data, ackSender) -> {
-                Integer userId = getUserId(client);
-                clientMsgHandler.onMsg(userId, data);
-
+        // netty-socketIo设计的感觉不太友好，本身不支持区分clientId，需要自己维护
+        // 对于namespace，服务端需要事先声明Namespace，否则会走触发默认的ConnectListener以及DisconnectListener
+        List<String> namespaces = properties.getNamespaces();
+        if (CollectionUtils.isEmpty(namespaces)) {
+            // 连接
+            socketIoServer.addConnectListener(client -> {
+                String clientId = client.getHandshakeData().getSingleUrlParam("clientId");
+                if (clientId != null) {
+                    SocketIoHelper.rootClientMap.put(clientId, client);
+                }
             });
+
+            // 断开
+            socketIoServer.addDisconnectListener(client -> {
+                String clientId = client.getHandshakeData().getSingleUrlParam("clientId");
+                if (clientId != null) {
+                    SocketIoHelper.rootClientMap.remove(clientId);
+                }
+            });
+
+            // event
+            if (socketIoEventRegister != null) {
+                socketIoEventRegister.registerEventListener(socketIoServer);
+            }
+        } else {
+            for (String namespace : namespaces) {
+                // 连接
+                socketIoServer.addNamespace(namespace).addConnectListener(client -> {
+                    Map<String, SocketIOClient> clientMap =
+                            SocketIoHelper.namespcaeClientMap.computeIfAbsent(namespace, k -> new HashMap<>());
+                    String clientId = client.getHandshakeData().getSingleUrlParam("clientId");
+                    if (clientId != null) {
+                        clientMap.put(clientId, client);
+                    }
+                });
+
+                // 断开
+                socketIoServer.addNamespace(namespace).addDisconnectListener(client -> {
+                    Map<String, SocketIOClient> clientMap = SocketIoHelper.namespcaeClientMap.get(namespace);
+                    if (clientMap != null) {
+                        String clientId = client.getHandshakeData().getSingleUrlParam("clientId");
+                        if (clientId != null) {
+                            clientMap.remove(clientId);
+                        }
+                    }
+                });
+
+                // event
+                if (socketIoEventRegister != null) {
+                    socketIoEventRegister.registerEventListener(socketIoServer);
+                }
+            }
         }
-        socketIOServer.start();
+        socketIoServer.start();
     }
 
     @PreDestroy
     private void destroy() {
-        if (socketIOServer != null) {
-            socketIOServer.stop();
+        if (socketIoServer != null) {
+            socketIoServer.stop();
         }
-    }
-
-    private Integer getUserId(SocketIOClient client) {
-        Map<String, List<String>> params = client.getHandshakeData().getUrlParams();
-        List<String> userIdList = params.get("userId");
-        if (!CollectionUtils.isEmpty(userIdList)) {
-            return Integer.valueOf(userIdList.get(0));
-        }
-        return null;
     }
 
     /**
-     * 私聊
-     * @param userId 用户id
-     * @param event  事件
-     * @param data   消息
+     * 发送数据
+     * @param event 事件
+     * @param data 数据
      */
-    public <T> void sendSingle(String event, T data, Integer userId) {
-        SocketIOClient client = socketclientMap.get(userId);
-        if (client != null) {
+    public <T> void send(String event, T data){
+        for(SocketIOClient client : rootClientMap.values()){
             client.sendEvent(event, data);
         }
     }
 
     /**
-     * 群发
-     * @param userIds 用户id
-     * @param event   事件
-     * @param data    消息
+     * 发送数据到指定namespace
+     * @param namespace 命名空间
+     * @param event 事件
+     * @param data 数据
      */
-    public <T> void sendGroup(String event, T data, List<Integer> userIds) {
-        for(Integer userId : userIds) {
-            SocketIOClient client = socketclientMap.get(userId);
-            if (client != null) {
+    public <T> void sendWithNamespace(String namespace, String event, T data) {
+        if(StringUtils.isBlank(namespace)){
+            return;
+        }
+        Map<String, SocketIOClient> clientMap = namespcaeClientMap.get(namespace);
+        if (clientMap != null) {
+            for (SocketIOClient client : clientMap.values()) {
                 client.sendEvent(event, data);
             }
         }
     }
 
     /**
-     * 广播
+     * 发送数据到room
+     * @param room 房间
      * @param event 事件
-     * @param data  消息
+     * @param data 数据
      */
-    public <T> void sendAll(String event, T data) {
-        for(SocketIOClient client : socketclientMap.values()) {
+    public <T> void sendRoom(String room, String event, T data){
+        if(StringUtils.isBlank(room)){
+            return;
+        }
+        for(SocketIOClient client : rootClientMap.values()){
+            client.joinRoom(room);
             client.sendEvent(event, data);
+        }
+    }
+
+    /**
+     * 发送数据到指定namespace中的room
+     * @param namespace 命名空间
+     * @param room 房间
+     * @param event 事件
+     * @param data 数据
+     */
+    public <T> void sendRoomWithNamespace(String namespace, String room, String event, T data) {
+        if(StringUtils.isBlank(namespace) || StringUtils.isBlank(room)){
+            return;
+        }
+        Map<String, SocketIOClient> clientMap = namespcaeClientMap.get(namespace);
+        if (clientMap != null) {
+            for (SocketIOClient client : clientMap.values()) {
+                client.joinRoom(room);
+                client.sendEvent(event, data);
+            }
+        }
+    }
+
+    /**
+     * 发送数据到客户端
+     * @param clientIds 客户端id
+     * @param event 事件
+     * @param data 数据
+     */
+    public <T> void sendClients(Collection<String> clientIds, String event, T data){
+        if(CollectionUtils.isEmpty(clientIds)){
+            return;
+        }
+        for(String clientId : clientIds){
+            SocketIOClient client = rootClientMap.get(clientId);
+            if(client != null){
+                client.sendEvent(event, data);
+            }
+        }
+    }
+
+    /**
+     * 发送数据到指定namespace下的客户端
+     * @param namespace 命名空间
+     * @param clientIds 客户端id
+     * @param data 数据
+     * @param event 事件
+     */
+    public <T> void sendClientsWithNamespace(String namespace, Collection<String> clientIds, String event, T data) {
+        if (StringUtils.isBlank(namespace) || CollectionUtils.isEmpty(clientIds)) {
+            return;
+        }
+        Map<String, SocketIOClient> clientMap = namespcaeClientMap.get(namespace);
+        if (clientMap != null) {
+            for (String clientId : clientIds) {
+                SocketIOClient client = clientMap.get(clientId);
+                if (client != null) {
+                    client.sendEvent(event, data);
+                }
+            }
+        }
+    }
+
+    /**
+     * 发送数据到room中的客户端
+     * @param room 房间
+     * @param clientIds 客户端id
+     * @param data 数据
+     * @param event 事件
+     */
+    public <T> void sendClientsInRoom(String room, Collection<String> clientIds, String event, T data){
+        if (StringUtils.isBlank(room) || CollectionUtils.isEmpty(clientIds)) {
+            return;
+        }
+        for(String clientId : clientIds){
+            SocketIOClient client = rootClientMap.get(clientId);
+            if(client != null){
+                client.joinRoom(room);
+                client.sendEvent(event, data);
+            }
+        }
+    }
+
+    /**
+     * 发送数据到指定namespace下room中的客户端
+     * @param namespace 命名空间
+     * @param room 房间
+     * @param clientIds 客户端id
+     * @param data 数据
+     * @param event 事件
+     */
+    public <T> void sendClientsInRoomWithNamespace(String namespace, String room, Collection<String> clientIds, String event, T data) {
+        if (StringUtils.isBlank(namespace) || StringUtils.isBlank(room) || CollectionUtils.isEmpty(clientIds)) {
+            return;
+        }
+        Map<String, SocketIOClient> clientMap = namespcaeClientMap.get(namespace);
+        if (clientMap != null) {
+            for (String clientId : clientIds) {
+                SocketIOClient client = clientMap.get(clientId);
+                if (client != null) {
+                    client.joinRoom(room);
+                    client.sendEvent(event, data);
+                }
+            }
         }
     }
 }

@@ -34,7 +34,7 @@ public class Collections {
         if (CollectionUtils.isEmpty(collection)) {
             return java.util.Collections.emptyList();
         }
-        return collection.stream().filter(filter).toList();
+        return collection.stream().filter(filter).collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -44,7 +44,7 @@ public class Collections {
         if (CollectionUtils.isEmpty(collection)) {
             return java.util.Collections.emptyList();
         }
-        return collection.stream().map(s -> Converts.copyProperties(s, clazz)).toList();
+        return collection.stream().map(s -> Converts.copyProperties(s, clazz)).collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -54,7 +54,7 @@ public class Collections {
         if (CollectionUtils.isEmpty(collection)) {
             return java.util.Collections.emptyList();
         }
-        return collection.stream().filter(predicate).map(s -> Converts.copyProperties(s, clazz)).toList();
+        return collection.stream().filter(predicate).map(s -> Converts.copyProperties(s, clazz)).collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -72,7 +72,7 @@ public class Collections {
      */
     @SafeVarargs
     public static <T> List<T> mergeToList(Collection<T>... collection) {
-        return Arrays.stream(collection).filter(Objects::nonNull).flatMap(Collection::stream).toList();
+        return Arrays.stream(collection).filter(Objects::nonNull).flatMap(Collection::stream).collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -80,7 +80,7 @@ public class Collections {
      */
     @SafeVarargs
     public static <T> List<T> mergeToList(Collection<T> collection, T... t) {
-        return Stream.concat(collection.stream(), Stream.of(t)).toList();
+        return Stream.concat(collection.stream(), Stream.of(t)).collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -88,7 +88,7 @@ public class Collections {
      */
     @SafeVarargs
     public static <T> List<T> mergeToDistinctList(Collection<T>... collection) {
-        return Arrays.stream(collection).flatMap(Collection::stream).distinct().toList();
+        return Arrays.stream(collection).flatMap(Collection::stream).distinct().collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -166,7 +166,7 @@ public class Collections {
         if (CollectionUtils.isEmpty(collection)) {
             return java.util.Collections.emptyList();
         }
-        return collection.stream().map(mapper).toList();
+        return collection.stream().map(mapper).collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -176,7 +176,7 @@ public class Collections {
         if (CollectionUtils.isEmpty(collection)) {
             return java.util.Collections.emptyList();
         }
-        return collection.stream().filter(filter).map(mapper).toList();
+        return collection.stream().filter(filter).map(mapper).collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -187,7 +187,7 @@ public class Collections {
             return java.util.Collections.emptyList();
         }
         return collection.stream().map(c -> {
-            T to = null;
+            T to;
             try {
                 to = clazz.getDeclaredConstructor().newInstance();
                 biConsumer.accept(c, to);
@@ -195,7 +195,7 @@ public class Collections {
                 throw new UnsupportedOperationException(e);
             }
             return to;
-        }).toList();
+        }).collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -205,7 +205,7 @@ public class Collections {
         if (CollectionUtils.isEmpty(collection)) {
             return java.util.Collections.emptyList();
         }
-        return collection.stream().flatMap(mapper).toList();
+        return collection.stream().flatMap(mapper).collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -215,7 +215,7 @@ public class Collections {
         if (CollectionUtils.isEmpty(collection)) {
             return java.util.Collections.emptyList();
         }
-        return collection.stream().filter(filter).flatMap(mapper).toList();
+        return collection.stream().filter(filter).flatMap(mapper).collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**

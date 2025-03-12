@@ -13,14 +13,18 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
- *
  * @author shanhuiming
- *
  */
 @Data
 @ConfigurationProperties(prefix = "spring.socket-io")
 public class SocketIoProperties {
+
+    private boolean allowCustomRequests = true;
+
+    private List<String> namespaces;
 
     private String host;
 
@@ -62,6 +66,4 @@ public class SocketIoProperties {
     private int bossCount = 1;
 
     private int workCount = 100;
-
-    private boolean allowCustomRequests = true;
 }
