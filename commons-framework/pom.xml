@@ -139,6 +139,12 @@
             <artifactId>mybatis-plus-boot-starter</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!-- elasticsearch -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <!-- seata -->
         <dependency>
             <groupId>org.apache.seata</groupId>

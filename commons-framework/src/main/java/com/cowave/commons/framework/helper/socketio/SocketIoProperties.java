@@ -13,8 +13,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import lombok.Data;
 
-import java.util.List;
-
 /**
  * @author shanhuiming
  */
@@ -23,8 +21,6 @@ import java.util.List;
 public class SocketIoProperties {
 
     private boolean allowCustomRequests = true;
-
-    private List<String> namespaces;
 
     private String host;
 

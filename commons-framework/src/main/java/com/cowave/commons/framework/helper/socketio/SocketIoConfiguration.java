@@ -42,9 +42,6 @@ public class SocketIoConfiguration {
     @Nullable
     private final BearerTokenService bearerTokenService;
 
-    @Nullable
-    private final SocketIoEventRegister socketIoEventRegister;
-
     @Bean
     public ExceptionListener exceptionListener(){
         return new SocketIoExceptionListener();
@@ -85,8 +82,8 @@ public class SocketIoConfiguration {
     }
 
     @Bean
-    public SocketIoHelper socketIoHelper(SocketIoProperties properties, SocketIOServer socketIoServer){
-        return new SocketIoHelper(properties, socketIoServer, socketIoEventRegister);
+    public SocketIoHelper socketIoHelper(SocketIOServer socketIoServer){
+        return new SocketIoHelper(socketIoServer);
     }
 
     @Bean
