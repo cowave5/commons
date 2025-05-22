@@ -9,10 +9,12 @@
  */
 package com.cowave.commons.framework.helper.redis.dict;
 
-import com.cowave.commons.client.http.asserts.AssertsException;
+import com.cowave.commons.client.http.asserts.HttpHintException;
 import com.cowave.commons.tools.DateUtils;
 
 import java.math.BigDecimal;
+
+import static com.cowave.commons.client.http.constants.HttpCode.BAD_REQUEST;
 
 /**
  * Value值转换器
@@ -48,7 +50,7 @@ public interface CustomValueParser<T> {
             CustomValueParser parser = (CustomValueParser) Class.forName(valueParser).getDeclaredConstructor().newInstance();
             return parser.parse(value);
         } catch (Exception e) {
-            throw new AssertsException("{frame.dict.parse.failed}", value); // TODO
+            throw new HttpHintException(BAD_REQUEST, "{frame.dict.parse.failed}", value);
         }
     }
 }

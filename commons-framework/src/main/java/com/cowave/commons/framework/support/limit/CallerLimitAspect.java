@@ -9,7 +9,7 @@
  */
 package com.cowave.commons.framework.support.limit;
 
-import com.cowave.commons.client.http.asserts.AssertsException;
+import com.cowave.commons.client.http.asserts.HttpHintException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +22,8 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
+
+import static com.cowave.commons.client.http.constants.HttpCode.TOO_MANY_REQUESTS;
 
 /**
  *
@@ -54,7 +56,7 @@ public class CallerLimitAspect {
         if (waitTime == -1) {
             LimitHelper.acquire(name, limit.permitsPerSecond());
         } else if (!LimitHelper.tryAcquire(name, limit.permitsPerSecond(), waitTime, limit.timeUnit())) {
-            throw new AssertsException("{frame.caller.limit}");
+            throw new HttpHintException(TOO_MANY_REQUESTS, "{frame.access.limit}");
         }
         return point.proceed();
     }

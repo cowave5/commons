@@ -16,13 +16,16 @@ import java.nio.file.Paths;
 
 import javax.servlet.http.HttpServletResponse;
 
-import com.cowave.commons.client.http.asserts.AssertsException;
+import com.cowave.commons.client.http.asserts.HttpHintException;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+
+import static com.cowave.commons.client.http.constants.HttpCode.BAD_REQUEST;
+import static com.cowave.commons.client.http.constants.HttpCode.INTERNAL_SERVER_ERROR;
 
 /**
  * @author shanhuiming
@@ -58,12 +61,12 @@ public class FileHelper {
         String name = multipartFile.getOriginalFilename();
         String suffix = FilenameUtils.getExtension(name);
         if (!suffixValid(suffix)) {
-            throw new AssertsException("{frame.file.invalid}", name);
+            throw new HttpHintException(BAD_REQUEST, "{frame.file.invalid}", name);
         }
 
         File dir = new File(dirPath);
         if (!dir.exists() && !dir.mkdirs()) {
-            throw new AssertsException("{frame.dir.failed}", dirPath);
+            throw new HttpHintException(INTERNAL_SERVER_ERROR, "{frame.dir.failed}", dirPath);
         }
 
         String md5 = DigestUtils.md5Hex(multipartFile.getBytes());

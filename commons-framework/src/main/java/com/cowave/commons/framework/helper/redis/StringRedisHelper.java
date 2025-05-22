@@ -10,7 +10,6 @@
 package com.cowave.commons.framework.helper.redis;
 
 import com.cowave.commons.client.http.asserts.Asserts;
-import com.cowave.commons.client.http.asserts.AssertsException;
 import com.cowave.commons.tools.Collections;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -1508,7 +1507,7 @@ public class StringRedisHelper {
         try {
             return MAPPER.readValue(value, clazz);
         } catch (JsonProcessingException e) {
-            throw new AssertsException("json read failed", e);
+            throw new IllegalStateException("json read failed", e);
         }
     }
 
@@ -1516,7 +1515,7 @@ public class StringRedisHelper {
         try {
             return MAPPER.readValue(value, typeReference);
         } catch (JsonProcessingException e) {
-            throw new AssertsException("json read failed", e);
+            throw new IllegalStateException("json read failed", e);
         }
     }
 
@@ -1525,7 +1524,7 @@ public class StringRedisHelper {
         try {
             return MAPPER.writeValueAsString(value);
         } catch (JsonProcessingException e) {
-            throw new AssertsException("json write failed", e);
+            throw new IllegalStateException("json write failed", e);
         }
     }
 }

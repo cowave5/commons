@@ -11,13 +11,15 @@ package com.cowave.commons.framework.helper.redis.dict;
 
 import java.util.*;
 
-import com.cowave.commons.client.http.asserts.AssertsException;
+import com.cowave.commons.client.http.asserts.HttpHintException;
 import com.cowave.commons.framework.configuration.ApplicationProperties;
 import com.cowave.commons.framework.helper.redis.RedisHelper;
 import com.cowave.commons.framework.helper.redis.StringRedisHelper;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.RequiredArgsConstructor;
+
+import static com.cowave.commons.client.http.constants.HttpCode.BAD_REQUEST;
 
 /**
  *
@@ -65,13 +67,13 @@ public class DictHelper {
      */
     public void put(Dict dict) {
         if(dict.getGroupCode() == null){
-            throw new AssertsException("{frame.dict.notnull.groupcode}");
+            throw new HttpHintException(BAD_REQUEST, "{frame.dict.notnull.groupcode}");
         }
         if(dict.getTypeCode() == null){
-            throw new AssertsException("{frame.dict.notnull.typecode}");
+            throw new HttpHintException(BAD_REQUEST, "{frame.dict.notnull.typecode}");
         }
         if(dict.getDictCode() == null){
-            throw new AssertsException("{frame.dict.notnull.code}");
+            throw new HttpHintException(BAD_REQUEST, "{frame.dict.notnull.code}");
         }
 
         Object dictValue = CustomValueParser.getValue(dict.getDictValue(), dict.getValueType(), dict.getValueParser());

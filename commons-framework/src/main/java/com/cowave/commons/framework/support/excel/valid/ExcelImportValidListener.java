@@ -14,12 +14,14 @@ import cn.hutool.extra.validation.ValidationUtil;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
-import com.cowave.commons.client.http.asserts.AssertsException;
+import com.cowave.commons.client.http.asserts.HttpHintException;
 import com.cowave.commons.client.http.asserts.I18Messages;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.cowave.commons.client.http.constants.HttpCode.BAD_REQUEST;
 
 /**
  * 触发@ExcelProperty标记的属性上的Valid校验
@@ -64,7 +66,7 @@ public class ExcelImportValidListener<T> extends AnalysisEventListener<T> {
             }
         }
         if(validFailed){
-            throw new AssertsException(failedBuilder.toString());
+            throw new HttpHintException(BAD_REQUEST, failedBuilder.toString());
         }
     }
 
