@@ -148,16 +148,14 @@ public class AccessFilter implements Filter {
             return;
         }
 
-        String json = new String(Base64.getDecoder().decode(userPayload));
+        String json = new String(Base64.getUrlDecoder().decode(userPayload));
         try {
             Map<String, Object> claims = objectMapper.readValue(json, Map.class);
 
             AccessUserDetails userDetails = new AccessUserDetails();
-            userDetails.setId((String) claims.get(CLAIM_ID));
             userDetails.setType((String) claims.get(CLAIM_TYPE));
-
-            String accessJwt = httpServletRequest.getHeader(accessProperties.tokenKey());
-            userDetails.setAccessToken(accessJwt);
+            userDetails.setAccessId((String) claims.get(CLAIM_ACCESS_ID));
+            userDetails.setRefreshId((String) claims.get(CLAIM_REFRESH_ID));
             // user
             userDetails.setUserId(claims.get(CLAIM_USER_ID));
             userDetails.setUserCode(claims.get(CLAIM_USER_CODE));

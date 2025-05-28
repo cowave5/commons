@@ -35,7 +35,7 @@ public class SocketIoAuthorizationListener implements AuthorizationListener {
         if(bearerTokenService == null){
             return true;
         }
-        String authorization = handshakeData.getSingleUrlParam(accessProperties.tokenKey());
-        return bearerTokenService.validAccessJwt(authorization);
+        String accessToken = handshakeData.getSingleUrlParam(accessProperties.tokenKey());
+        return bearerTokenService.validAccessToken(accessToken);
     }
 }

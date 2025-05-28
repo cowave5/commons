@@ -61,9 +61,9 @@ public class BearerTokenFilter extends OncePerRequestFilter {
     private void bearerAuth(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         AccessUserDetails accessUserDetails;
         if (useRefreshToken) {
-            accessUserDetails = bearerTokenService.dualParseToken(response);
+            accessUserDetails = bearerTokenService.parseAccessRefreshToken(response);
         } else {
-            accessUserDetails = bearerTokenService.simpleParseToken(response);
+            accessUserDetails = bearerTokenService.parseAccessToken(response);
         }
         if (accessUserDetails == null) {
             return;

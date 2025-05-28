@@ -35,19 +35,24 @@ public class AccessUserDetails implements UserDetails {
     private static final long serialVersionUID = -3928832861296252415L;
 
     /**
+     * 针对强退场景，阻止被强退的认证继续访问
+     */
+    private String accessId;
+
+    /**
      * accessToken
      */
     private String accessToken;
 
     /**
+     * 刷新Token时判断是否已被刷过，可检测异地登录
+     */
+    private String refreshId;
+
+    /**
      * refreshToken
      */
     private String refreshToken;
-
-    /**
-     * id (Refresh时的随机id，可以判断Token是否已被refresh过）
-     */
-    private String id;
 
     /**
      * type
@@ -62,7 +67,7 @@ public class AccessUserDetails implements UserDetails {
     /**
      * 登录时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss Z z")
     private Date loginTime;
 
     /**
@@ -73,7 +78,7 @@ public class AccessUserDetails implements UserDetails {
     /**
      * 访问时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss Z z")
     private Date accessTime;
 
     /**
@@ -208,7 +213,8 @@ public class AccessUserDetails implements UserDetails {
         accessUserDetails.setLoginTime(Access.accessTime());
         accessUserDetails.setAccessIp(Access.accessIp());
         accessUserDetails.setAccessTime(Access.accessTime());
-        accessUserDetails.setId(IdUtil.fastSimpleUUID());
+        accessUserDetails.setAccessId(IdUtil.fastSimpleUUID());
+        accessUserDetails.setRefreshId(IdUtil.fastSimpleUUID());
         return accessUserDetails;
     }
 

@@ -59,9 +59,9 @@ public class AccessUserDetailsServiceImpl implements UserDetailsService {
         accessUserDetails.setClusterLevel(applicationProperties.getClusterLevel());
         accessUserDetails.setClusterName(applicationProperties.getClusterName());
         if ("accessToken".equals(mode)) {
-            bearerTokenService.simpleAssignToken(accessUserDetails);
+            bearerTokenService.assignAccessToken(accessUserDetails);
         } else if ("refreshToken".equals(mode)) {
-            bearerTokenService.dualAssignToken(accessUserDetails);
+            bearerTokenService.assignAccessRefreshToken(accessUserDetails);
         }
         return accessUserDetails;
     }

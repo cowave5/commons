@@ -9,7 +9,6 @@
  */
 package com.cowave.commons.framework.helper.redis.dict;
 
-import com.cowave.commons.framework.configuration.ApplicationProperties;
 import com.cowave.commons.framework.helper.redis.RedisHelper;
 import com.cowave.commons.framework.helper.redis.StringRedisHelper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -27,8 +26,7 @@ import org.springframework.data.redis.core.RedisOperations;
 public class DictConfiguration {
 
     @Bean
-    public DictHelper dictHelper(ApplicationProperties applicationProperties,
-            RedisHelper redisHelper, StringRedisHelper stringRedisHelper){
-        return new DictHelper(applicationProperties, redisHelper, stringRedisHelper);
+    public DictHelper dictHelper(RedisHelper redisHelper, StringRedisHelper stringRedisHelper){
+        return new DictHelper(redisHelper, stringRedisHelper);
     }
 }
