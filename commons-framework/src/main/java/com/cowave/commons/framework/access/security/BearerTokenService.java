@@ -35,28 +35,24 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static com.cowave.commons.client.http.constants.HttpCode.*;
 
 /**
- *
  * @author shanhuiming
- *
  */
 @SuppressWarnings("deprecation")
 @ConditionalOnClass({WebSecurityConfigurerAdapter.class, Jwts.class})
 @RequiredArgsConstructor
 @Service
 public class BearerTokenService {
-    public static final String CLAIM_ID = "Token.id";
     public static final String CLAIM_TYPE = "Token.type";
+    public static final String CLAIM_ACCESS_IP = "Token.ip";
+    public static final String CLAIM_ACCESS_ID = "Token.access";
+    public static final String CLAIM_REFRESH_ID = "Token.refresh";
     public static final String CLAIM_CONFLICT = "Token.conflict";
-    public static final String CLAIM_USER_IP = "User.ip";
     public static final String CLAIM_USER_ID = "User.id";
     public static final String CLAIM_USER_CODE = "User.code";
     public static final String CLAIM_USER_PROPERTIES = "User.properties";
@@ -83,82 +79,190 @@ public class BearerTokenService {
     private final RedisHelper redisHelper;
 
     /**
-     * 设置Token（简单模式：仅使用AccessToken）
+     * 设置AccessToken
      */
-    public String simpleAssignToken(AccessUserDetails userDetails){
-        String accessJwt = Jwts.builder()
-                .claim(CLAIM_USER_ID,         userDetails.getUserId())
-                .claim(CLAIM_USER_CODE,       userDetails.getUserCode())
+    public String assignAccessToken(AccessUserDetails userDetails) {
+        String accessToken = Jwts.builder()
+                .claim(CLAIM_TYPE, userDetails.getType())
+                .claim(CLAIM_ACCESS_IP, Access.accessIp())
+                .claim(CLAIM_ACCESS_ID, userDetails.getAccessId())
+                .claim(CLAIM_CONFLICT, accessProperties.conflict() ? "Y" : "N")
+                .claim(CLAIM_USER_ID, userDetails.getUserId())
+                .claim(CLAIM_USER_CODE, userDetails.getUserCode())
                 .claim(CLAIM_USER_PROPERTIES, userDetails.getUserProperties())
-                .claim(CLAIM_USER_NAME,       userDetails.getUserNick())
-                .claim(CLAIM_USER_ACCOUNT,    userDetails.getUsername())
-                .claim(CLAIM_DEPT_ID,         userDetails.getDeptId())
-                .claim(CLAIM_DEPT_CODE,       userDetails.getDeptCode())
-                .claim(CLAIM_DEPT_NAME,       userDetails.getDeptName())
-                .claim(CLAIM_CLUSTER_ID,      applicationProperties.getClusterId())
-                .claim(CLAIM_CLUSTER_LEVEL,   applicationProperties.getClusterLevel())
-                .claim(CLAIM_CLUSTER_NAME,    applicationProperties.getClusterName())
-                .claim(CLAIM_USER_ROLE,       userDetails.getRoles())
-                .claim(CLAIM_USER_PERM,       userDetails.getPermissions())
-                .claim(CLAIM_TYPE,            userDetails.getType())
-                .claim(CLAIM_USER_IP,         Access.accessIp())
-                .claim(CLAIM_CONFLICT,        accessProperties.conflict() ? "Y" : "N")
+                .claim(CLAIM_USER_NAME, userDetails.getUserNick())
+                .claim(CLAIM_USER_ACCOUNT, userDetails.getUsername())
+                .claim(CLAIM_USER_ROLE, userDetails.getRoles())
+                .claim(CLAIM_USER_PERM, userDetails.getPermissions())
+                .claim(CLAIM_DEPT_ID, userDetails.getDeptId())
+                .claim(CLAIM_DEPT_CODE, userDetails.getDeptCode())
+                .claim(CLAIM_DEPT_NAME, userDetails.getDeptName())
+                .claim(CLAIM_CLUSTER_ID, userDetails.getClusterId())
+                .claim(CLAIM_CLUSTER_LEVEL, userDetails.getClusterLevel())
+                .claim(CLAIM_CLUSTER_NAME, userDetails.getClusterName())
                 .setIssuedAt(new Date())
                 .signWith(SignatureAlgorithm.HS512, accessProperties.accessSecret())
                 .setExpiration(new Date(System.currentTimeMillis() + accessProperties.accessExpire() * 1000L))
                 .compact();
-        userDetails.setAccessToken(accessJwt);
+        userDetails.setAccessToken(accessToken);
         // 保存到上下文中
         Access access = Access.get();
-        if(access == null){
+        if (access == null) {
             access = Access.newAccess(accessIdGenerator);
         }
         access.setUserDetails(userDetails);
         Access.set(access);
-
         // 尝试设置Cookie
-        if("cookie".equals(accessProperties.tokenStore())){
-            Access.setCookie(accessProperties.tokenKey(), accessJwt, "/", accessProperties.accessExpire());
+        if ("cookie".equals(accessProperties.tokenStore())) {
+            Access.setCookie(accessProperties.tokenKey(), accessToken, "/", accessProperties.accessExpire());
         }
-        return accessJwt;
+        // 服务端保存
+        if(redisHelper != null){
+            AccessTokenInfo accessTokenInfo = new AccessTokenInfo(userDetails);
+            redisHelper.putExpire(getAccessTokenKey(userDetails.getAccessId()),
+                    accessTokenInfo, accessProperties.accessExpire(), TimeUnit.SECONDS);
+        }
+        return accessToken;
     }
 
     /**
-     * 解析Token（简单模式：仅使用AccessToken）
+     * 设置RefreshToken
      */
-    AccessUserDetails simpleParseToken(HttpServletResponse response) throws IOException {
-        String accessJwt = getAccessJwt();
-        if(accessJwt != null) {
-            return simpleParseAccessJwt(accessJwt, response);
+    private void assignRefreshToken(AccessUserDetails userDetails) {
+        String refreshToken = Jwts.builder()
+                .claim(CLAIM_TYPE, userDetails.getType())
+                .claim(CLAIM_REFRESH_ID, userDetails.getRefreshId())
+                .claim(CLAIM_USER_ACCOUNT, userDetails.getUsername())
+                .setIssuedAt(new Date())
+                .signWith(SignatureAlgorithm.HS512, accessProperties.refreshSecret())
+                .compact();
+        userDetails.setRefreshToken(refreshToken);
+        userDetails.setClusterId(applicationProperties.getClusterId());
+        userDetails.setClusterLevel(applicationProperties.getClusterLevel());
+        userDetails.setClusterName(applicationProperties.getClusterName());
+        // 服务端保存
+        if(redisHelper != null){
+            RefreshTokenInfo refreshTokenInfo = new RefreshTokenInfo(userDetails);
+            redisHelper.putExpire(getRefreshTokenKey(userDetails.getType(), userDetails.getUsername()),
+                    refreshTokenInfo, accessProperties.refreshExpire(), TimeUnit.SECONDS);
         }
-        if(response == null){
+    }
+
+    /**
+     * 设置AccessToken和RefreshToken
+     */
+    public void assignAccessRefreshToken(AccessUserDetails userDetails) {
+        assignAccessToken(userDetails);
+        assignRefreshToken(userDetails);
+    }
+
+    /**
+     * 刷新AccessToken
+     */
+    public String refreshAccessToken() throws Exception {
+        AccessUserDetails userDetails = parseAccessToken(null);
+        if(redisHelper != null){
+            AccessTokenInfo accessTokenInfo = redisHelper.getValue(getAccessTokenKey(userDetails.getAccessId()));
+            if(accessTokenInfo != null){
+                userDetails.setLoginIp(accessTokenInfo.getLoginIp());
+                userDetails.setLoginTime(accessTokenInfo.getLoginTime());
+                userDetails.setClusterName(accessTokenInfo.getAccessCluster());
+                redisHelper.delete(getAccessTokenKey(userDetails.getAccessId()));
+            }
+        }
+        userDetails.setAccessId(IdUtil.fastSimpleUUID());
+        userDetails.setAccessIp(Access.accessIp());
+        userDetails.setAccessTime(Access.accessTime());
+        return assignAccessToken(userDetails);
+    }
+
+    /**
+     * 刷新AccessToken和RefreshToken
+     */
+    public AccessUserDetails refreshAccessRefreshToken(String refreshToken) {
+        Claims claims;
+        try {
+            claims = Jwts.parser().setSigningKey(
+                    accessProperties.refreshSecret()).parseClaimsJws(refreshToken).getBody();
+        } catch (Exception e) {
+            throw new HttpHintException(UNAUTHORIZED, "{frame.auth.invalid}");
+        }
+
+        String userAccount = (String) claims.get(CLAIM_USER_ACCOUNT);
+        String refreshId = (String) claims.get(CLAIM_REFRESH_ID);
+        String type = (String) claims.get(CLAIM_TYPE);
+        assert redisHelper != null;
+
+        // 获取服务保存的Token
+        RefreshTokenInfo refreshTokenInfo = redisHelper.getValue(getRefreshTokenKey(type, userAccount));
+        if (refreshTokenInfo == null) {
+            throw new HttpHintException(UNAUTHORIZED, "{frame.auth.notexist}");
+        }
+
+        // 比对id，判断Token是否已经被刷新过
+        if (accessProperties.conflict() && !refreshId.equals(refreshTokenInfo.getRefreshId())) {
+            throw new HttpHintException(UNAUTHORIZED, "{frame.auth.conflict}");
+        }
+
+        //当前accessToken失效
+        String accessId = refreshTokenInfo.getAccessId();
+        if (accessProperties.conflict()) {
+            redisHelper.delete(getAccessTokenKey(accessId));
+        }
+
+        // 更新Token信息
+        AccessUserDetails userDetails = new AccessUserDetails(refreshTokenInfo);
+        userDetails.setAccessId(IdUtil.fastSimpleUUID());
+        userDetails.setRefreshId(IdUtil.fastSimpleUUID());
+        userDetails.setAccessIp(Access.accessIp());
+        userDetails.setAccessTime(Access.accessTime());
+        // 刷新Token并返回
+        assignAccessRefreshToken(userDetails);
+        return userDetails;
+    }
+
+    private String getAccessToken() {
+        String authorization;
+        if ("cookie".equals(accessProperties.tokenStore())) {
+            authorization = Access.getCookie(accessProperties.tokenKey());
+        } else {
+            authorization = Access.getRequestHeader(accessProperties.tokenKey());
+        }
+
+        if (StringUtils.isEmpty(authorization)) {
+            return null;
+        }
+        if (authorization.startsWith("Bearer ")) {
+            authorization = authorization.replace("Bearer ", "");
+        }
+        return authorization;
+    }
+
+    /**
+     * 解析AccessToken
+     */
+    AccessUserDetails parseAccessToken(HttpServletResponse response) throws IOException {
+        String accessToken = getAccessToken();
+        if (accessToken != null) {
+            return parseAccessToken(accessToken, response);
+        }
+        if (response == null) {
             throw new HttpHintException(UNAUTHORIZED, "{frame.auth.no}");
         }
         writeResponse(response, UNAUTHORIZED, "frame.auth.no");
         return null;
     }
 
-    private String getAccessJwt() {
-        String accessJwt;
-        if("cookie".equals(accessProperties.tokenStore())){
-            accessJwt = Access.getCookie(accessProperties.tokenKey());
-        }else{
-            accessJwt = Access.getRequestHeader(accessProperties.tokenKey());
-        }
-
-        if(StringUtils.isEmpty(accessJwt)) {
-            return null;
-        }
-        if(accessJwt.startsWith("Bearer ")) {
-            accessJwt = accessJwt.replace("Bearer ", "");
-        }
-        return accessJwt;
-    }
-
-    private AccessUserDetails simpleParseAccessJwt(String accessJwt, HttpServletResponse response) throws IOException {
+    private AccessUserDetails parseAccessToken(String accessToken, HttpServletResponse response) throws IOException {
         Claims claims;
         try {
-            claims = Jwts.parser().setSigningKey(accessProperties.accessSecret()).parseClaimsJws(accessJwt).getBody();
+            claims = Jwts.parser().setSigningKey(accessProperties.accessSecret()).parseClaimsJws(accessToken).getBody();
+        } catch (ExpiredJwtException e) {
+            if (response == null) {
+                throw new HttpHintException(UNAUTHORIZED, "{frame.auth.expired}");
+            }
+            writeResponse(response, UNAUTHORIZED, "frame.auth.expired");
+            return null;
         } catch (Exception e) {
             if (response == null) {
                 throw new HttpHintException(UNAUTHORIZED, "{frame.auth.invalid}");
@@ -166,35 +270,35 @@ public class BearerTokenService {
             writeResponse(response, UNAUTHORIZED, "frame.auth.invalid");
             return null;
         }
-        return parseAccessTokenFromJwt(accessJwt, claims);
+        return doParseAccessToken(claims);
     }
 
-    private AccessUserDetails parseAccessTokenFromJwt(String accessJwt, Claims claims){
+    private AccessUserDetails doParseAccessToken(Claims claims) {
         AccessUserDetails userDetails = new AccessUserDetails();
-        userDetails.setAccessToken(accessJwt);
-        userDetails.setId((String)claims.get(CLAIM_ID));
-        userDetails.setType((String)claims.get(CLAIM_TYPE));
+        userDetails.setType((String) claims.get(CLAIM_TYPE));
+        userDetails.setAccessId((String) claims.get(CLAIM_ACCESS_ID));
+        userDetails.setRefreshId((String) claims.get(CLAIM_REFRESH_ID));
         // user
         userDetails.setUserId(claims.get(CLAIM_USER_ID));
         userDetails.setUserCode(claims.get(CLAIM_USER_CODE));
-        userDetails.setUsername((String)claims.get(CLAIM_USER_ACCOUNT));
-        userDetails.setUserNick((String)claims.get(CLAIM_USER_NAME));
-        userDetails.setUserProperties((Map<String, Object>)claims.get(CLAIM_USER_PROPERTIES));
+        userDetails.setUsername((String) claims.get(CLAIM_USER_ACCOUNT));
+        userDetails.setUserNick((String) claims.get(CLAIM_USER_NAME));
+        userDetails.setUserProperties((Map<String, Object>) claims.get(CLAIM_USER_PROPERTIES));
         // dept
         userDetails.setDeptId(claims.get(CLAIM_DEPT_ID));
         userDetails.setDeptCode(claims.get(CLAIM_DEPT_CODE));
-        userDetails.setDeptName((String)claims.get(CLAIM_DEPT_NAME));
+        userDetails.setDeptName((String) claims.get(CLAIM_DEPT_NAME));
         // cluster
-        userDetails.setClusterId((Integer)claims.get(CLAIM_CLUSTER_ID));
-        userDetails.setClusterLevel((Integer)claims.get(CLAIM_CLUSTER_LEVEL));
-        userDetails.setClusterName((String)claims.get(CLAIM_CLUSTER_NAME));
+        userDetails.setClusterId((Integer) claims.get(CLAIM_CLUSTER_ID));
+        userDetails.setClusterLevel((Integer) claims.get(CLAIM_CLUSTER_LEVEL));
+        userDetails.setClusterName((String) claims.get(CLAIM_CLUSTER_NAME));
         // roles
-        userDetails.setRoles((List<String>)claims.get(CLAIM_USER_ROLE));
+        userDetails.setRoles((List<String>) claims.get(CLAIM_USER_ROLE));
         // permits
-        userDetails.setPermissions((List<String>)claims.get(CLAIM_USER_PERM));
+        userDetails.setPermissions((List<String>) claims.get(CLAIM_USER_PERM));
         // 保存到上下文中
         Access access = Access.get();
-        if(access == null){
+        if (access == null) {
             access = Access.newAccess(accessIdGenerator);
         }
         access.setUserDetails(userDetails);
@@ -203,141 +307,105 @@ public class BearerTokenService {
     }
 
     /**
-     * 刷新Token（简单模式：仅使用AccessToken）
+     * 解析AccessToken（使用RefreshToken）
      */
-    public String simpleRefreshToken() throws Exception {
-        return simpleAssignToken(simpleParseToken(null));
-    }
-
-    /**
-     * 设置Token（Dual模式：使用AccessToken和RefreshToken）
-     */
-    public void dualAssignToken(AccessUserDetails userDetails){
-        simpleAssignToken(userDetails);
-        dualAssignRefreshJwt(userDetails);
-    }
-
-    private void dualAssignRefreshJwt(AccessUserDetails userDetails) {
-        userDetails.setRefreshToken(Jwts.builder()
-                .claim(CLAIM_ID, userDetails.getId())
-                .claim(CLAIM_TYPE, userDetails.getType())
-                .claim(CLAIM_USER_ACCOUNT, userDetails.getUsername())
-                .setIssuedAt(new Date())
-                .signWith(SignatureAlgorithm.HS512, accessProperties.refreshSecret())
-                .compact());
-        userDetails.setClusterId(applicationProperties.getClusterId());
-        userDetails.setClusterLevel(applicationProperties.getClusterLevel());
-        userDetails.setClusterName(applicationProperties.getClusterName());
-        // 保存在服务端
-        assert redisHelper != null;
-        String key = applicationProperties.getTokenNamespace() + userDetails.getType() + ":" + userDetails.getUsername();
-        redisHelper.putExpire(key, userDetails, accessProperties.refreshExpire(), TimeUnit.SECONDS);
-    }
-
-    /**
-     * 解析Token（Dual模式：使用AccessToken和RefreshToken）
-     */
-    AccessUserDetails dualParseToken(HttpServletResponse response) throws IOException {
-        String accessJwt = getAccessJwt();
-        if(accessJwt != null) {
-            return dualParseAccessJwt(accessJwt, response);
+    AccessUserDetails parseAccessRefreshToken(HttpServletResponse response) throws IOException {
+        String accessToken = getAccessToken();
+        if (accessToken != null) {
+            return parseAccessRefreshToken(accessToken, response);
         }
         writeResponse(response, UNAUTHORIZED, "frame.auth.no");
         return null;
     }
 
-    private AccessUserDetails dualParseAccessJwt(String accessJwt, HttpServletResponse response) throws IOException {
+    private AccessUserDetails parseAccessRefreshToken(String accessToken, HttpServletResponse response) throws IOException {
         Claims claims;
         try {
-            claims =  Jwts.parser().setSigningKey(
-                    accessProperties.accessSecret()).parseClaimsJws(accessJwt).getBody();
-        }catch(ExpiredJwtException e) {
+            claims = Jwts.parser().setSigningKey(accessProperties.accessSecret()).parseClaimsJws(accessToken).getBody();
+        } catch (ExpiredJwtException e) {
             writeResponse(response, INVALID_TOKEN, "frame.auth.expired");
             return null;
-        }catch(Exception e) {
+        } catch (Exception e) {
             writeResponse(response, UNAUTHORIZED, "frame.auth.invalid");
             return null;
         }
 
         // IP变化，要求重新刷一下accessToken
-        String userIp = (String)claims.get(CLAIM_USER_IP);
-        String tokenConflict = (String)claims.get(CLAIM_CONFLICT);
-        if("Y".equals(tokenConflict) && !Objects.equals(Access.accessIp(), userIp)) {
+        String accessIp = (String) claims.get(CLAIM_ACCESS_IP);
+        String tokenConflict = (String) claims.get(CLAIM_CONFLICT);
+        if ("Y".equals(tokenConflict) && !Objects.equals(Access.accessIp(), accessIp)) {
             writeResponse(response, INVALID_TOKEN, "frame.auth.ipchanged");
             return null;
         }
-        return parseAccessTokenFromJwt(accessJwt, claims);
+        return doParseAccessToken(claims);
     }
 
     /**
-     * 刷新Token（Dual模式：使用AccessToken和RefreshToken）
+     * 退出AccessToken，删除RefreshToken
      */
-    public AccessUserDetails dualRefreshToken(String refreshJwt) {
-        Claims claims;
-        try {
-            claims = Jwts.parser().setSigningKey(
-                    accessProperties.refreshSecret()).parseClaimsJws(refreshJwt).getBody();
-        } catch(Exception e) {
-            throw new HttpHintException(UNAUTHORIZED, "{frame.auth.invalid}");
-        }
-        // 获取服务保存的Token
-        assert redisHelper != null;
-        AccessUserDetails userDetails = redisHelper.getValue(dualRefreshKey(claims));
-        if(userDetails == null) {
-            throw new HttpHintException(UNAUTHORIZED, "{frame.auth.notexist}");
-        }
-        // 比对id，判断Token是否已经被刷新过
-        String tokenId = (String)claims.get(CLAIM_ID);
-        if(accessProperties.conflict() && !tokenId.equals(userDetails.getId())) {
-            throw new HttpHintException(UNAUTHORIZED, "{frame.auth.conflict}");
-        }
-        // 更新Token信息
-        userDetails.setId(IdUtil.fastSimpleUUID());
-        userDetails.setAccessTime(Access.accessTime());
-        userDetails.setAccessIp(Access.accessIp());
-        // 刷新Token并返回
-        dualAssignToken(userDetails);
-        return userDetails;
-    }
-
-    /**
-     * 删除Token（Dual模式：使用AccessToken和RefreshToken）
-     */
-    public void dualRemoveToken(HttpServletResponse response, String accessJwt) throws IOException {
-        Claims claims;
-        try {
-            claims = Jwts.parser().setSigningKey(
-                    accessProperties.accessSecret()).parseClaimsJws(accessJwt).getBody();
-        }catch(ExpiredJwtException e) {
-            claims = e.getClaims();
-        }catch(Exception e) {
-            writeResponse(response, UNAUTHORIZED, "frame.auth.invalid");
+    public void removeAccessRefreshToken() {
+        AccessUserDetails userDetails = Access.userDetails();
+        if(userDetails == null){
             return;
         }
-        assert redisHelper != null;
-        redisHelper.delete(dualRefreshKey(claims));
-    }
 
-    private String dualRefreshKey(Claims claims){
-        String tokenType = (String)claims.get(CLAIM_TYPE);
-        String userAccount = (String)claims.get(CLAIM_USER_ACCOUNT);
-        return applicationProperties.getTokenNamespace() + tokenType + ":" + userAccount;
+        String accessId = userDetails.getAccessId();
+        String userAccount = userDetails.getUsername();
+        assert redisHelper != null;
+        redisHelper.delete(getAccessTokenKey(accessId));
+        redisHelper.delete(getRefreshTokenKey(userDetails.getType(), userAccount));
     }
 
     /**
-     * 验证 AccessToken-Jwt
+     * Access访问信息
      */
-    public boolean validAccessJwt(String accessJwt) {
-        if(StringUtils.isBlank(accessJwt)) {
+    public List<AccessTokenInfo> listAccessToken(String userAccount, Date beginTime, Date endTime) {
+        List<AccessTokenInfo> list = new ArrayList<>();
+        for (String key : redisHelper.keys(applicationProperties.getName() + ":token:access:*")) {
+            AccessTokenInfo accessTokenInfo = redisHelper.getValue(key);
+            if (accessTokenInfo != null) {
+                if ((userAccount != null && !accessTokenInfo.getUserAccount().contains(userAccount))
+                        || (beginTime != null && beginTime.after(accessTokenInfo.getAccessTime()))
+                        || (endTime != null && endTime.before(accessTokenInfo.getAccessTime()))) {
+                    continue;
+                }
+                list.add(accessTokenInfo);
+            }
+        }
+        return list;
+    }
+
+    /**
+     * 退出AccessToken
+     */
+    public AccessTokenInfo quitAccessToken(String accessId) {
+        String key = getAccessTokenKey(accessId);
+        AccessTokenInfo accessTokenInfo = redisHelper.getValue(key);
+        redisHelper.delete(key);
+        return accessTokenInfo;
+    }
+
+    private String getAccessTokenKey(String accessId) {
+        return applicationProperties.getName() + ":token:access:" + accessId;
+    }
+
+    private String getRefreshTokenKey(String type, String userAccount) {
+        return applicationProperties.getName() + ":token:refresh:" + type + ":" + userAccount;
+    }
+
+    /**
+     * 验证AccessToken
+     */
+    public boolean validAccessToken(String accessToken) {
+        if (StringUtils.isBlank(accessToken)) {
             return false;
         }
-        if(accessJwt.startsWith("Bearer ")) {
-            accessJwt = accessJwt.replace("Bearer ", "");
+        if (accessToken.startsWith("Bearer ")) {
+            accessToken = accessToken.replace("Bearer ", "");
         }
         try {
-            Jwts.parser().setSigningKey(
-                    accessProperties.accessSecret()).parseClaimsJws(accessJwt).getBody();
-        }catch(Exception e) {
+            Jwts.parser().setSigningKey(accessProperties.accessSecret()).parseClaimsJws(accessToken).getBody();
+        } catch (Exception e) {
             return false;
         }
         return true;
@@ -345,13 +413,13 @@ public class BearerTokenService {
 
     private void writeResponse(HttpServletResponse response, ResponseCode responseCode, String messageKey) throws IOException {
         int httpStatus = responseCode.getStatus();
-        if(accessProperties.isAlwaysSuccess()){
+        if (accessProperties.isAlwaysSuccess()) {
             httpStatus = SUCCESS.getStatus();
         }
         response.setStatus(httpStatus);
         response.setCharacterEncoding("UTF-8");
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        try(PrintWriter writer = response.getWriter()){
+        try (PrintWriter writer = response.getWriter()) {
             writer.write(objectMapper.writeValueAsString(Response.msg(responseCode, I18Messages.msg(messageKey))));
         }
     }

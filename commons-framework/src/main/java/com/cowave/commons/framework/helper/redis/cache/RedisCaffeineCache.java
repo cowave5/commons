@@ -192,7 +192,7 @@ public class RedisCaffeineCache extends AbstractValueAdaptingCache {
     }
 
     private String redisKey(Object key) {
-        return applicationProperties.getCacheNamespace() + cacheName + ":" + key.toString();
+        return applicationProperties.getName() + ":cache:" + cacheName + ":" + key.toString();
     }
 
     @Override

@@ -1,49 +1,39 @@
-/*
- * Copyright (c) 2017～2025 Cowave All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0.txt
- *
- * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- */
 package com.cowave.commons.tools;
 
-import com.cowave.commons.tools.ssh.Terminal;
-import org.apache.commons.lang3.StringUtils;
+import lombok.Getter;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.*;
 import java.util.*;
 
 /**
- * @author jiangbo
+ * @author shanhuiming
  */
-public class Hosts {
+public class NetUtils {
 
     /**
-     * hostIp
-     * @see com.alibaba.nacos.api.utils.NetUtils
+     * ip转int
      */
-    public static String hostIp(){
-        InetAddress inetAddress = findFirstNonLoopbackAddress();
-        if (inetAddress == null) {
-            return "";
+    public static int ipv4ToInt(String ip) {
+        String[] parts = ip.trim().split("\\.");
+        if (parts.length != 4) {
+            throw new IllegalArgumentException("Invalid ip format: " + ip);
         }
-        return inetAddress.getHostAddress();
+        int result = 0;
+        for (String part : parts) {
+            result = (result << 8) | Integer.parseInt(part);
+        }
+        return result;
     }
 
     /**
-     * hostName
-     * @see com.alibaba.nacos.api.utils.NetUtils
+     * int转ip
      */
-    public static String hostName(){
-        InetAddress inetAddress = findFirstNonLoopbackAddress();
-        if (inetAddress == null) {
-            return "";
-        }
-        return inetAddress.getHostName();
+    public static String intToIpv4(int ipInt) {
+        return String.format("%d.%d.%d.%d",
+                (ipInt >>> 24) & 0xFF,
+                (ipInt >>> 16) & 0xFF,
+                (ipInt >>> 8) & 0xFF,
+                ipInt & 0xFF);
     }
 
     /**
@@ -66,22 +56,6 @@ public class Hosts {
     }
 
     /**
-     * 本地监听Port列表
-     */
-    public static List<Integer> getListeningPorts() throws IOException, InterruptedException {
-        String os = System.getenv("OS");
-        if (StringUtils.isNotBlank(os) && StringUtils.containsIgnoreCase(os, "windows")) {
-            return List.of();
-        }
-        String[] cmd = {"/bin/bash", "-c", "netstat -nltp |awk '{if (NR>2){print $4}}'| awk -F \":\" '{print $NF}' | sort | uniq"};
-        Terminal.Result result = Terminal.process(cmd, Map.of());
-        if(!result.isSuccess()){
-            throw new UnsupportedEncodingException("Hosts.getLocalPorts failed" + result.getError());
-        }
-        return Arrays.stream(StringUtils.split(result.getOutput(), "\n")).map(Integer::parseInt).toList();
-    }
-
-    /**
      * 检测socket连接
      */
     public static boolean validSocket(String ip, Integer port) {
@@ -100,13 +74,55 @@ public class Hosts {
         return true;
     }
 
+    @Getter
+    public static class IpMask {
+        private final int network;
+        private final int mask;
+        public IpMask(String ipMask) {
+            String[] parts = ipMask.split("/");
+            String ip = parts[0];
+            int prefix = parts.length > 1 ? Integer.parseInt(parts[1]) : 32;
+            this.mask = prefix == 0 ? 0 : -(1 << (32 - prefix));
+            this.network = ipv4ToInt(ip) & mask;
+        }
+
+        public boolean contains(String ip){
+            return contains(ipv4ToInt(ip));
+        }
+
+        public boolean contains(int ipInt) {
+            return (ipInt & mask) == network;
+        }
+    }
+
+    /**
+     * hostIp
+     */
+    public static String hostIp(){
+        InetAddress inetAddress = findFirstNonLoopbackAddress();
+        if (inetAddress == null) {
+            return "";
+        }
+        return inetAddress.getHostAddress();
+    }
+
+    /**
+     * hostName
+     */
+    public static String hostName(){
+        InetAddress inetAddress = findFirstNonLoopbackAddress();
+        if (inetAddress == null) {
+            return "";
+        }
+        return inetAddress.getHostName();
+    }
+
     private static InetAddress findFirstNonLoopbackAddress() {
         InetAddress result = null;
 
         try {
             int lowest = Integer.MAX_VALUE;
-            for (Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
-                 nics.hasMoreElements(); ) {
+            for (Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces(); nics.hasMoreElements();) {
                 NetworkInterface ifc = nics.nextElement();
                 if (ifc.isUp()) {
                     if (ifc.getIndex() < lowest || result == null) {

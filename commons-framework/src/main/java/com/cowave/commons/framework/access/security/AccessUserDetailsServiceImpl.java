@@ -17,6 +17,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Map;
 
+import static com.cowave.commons.framework.access.security.AuthMode.ACCESS;
+import static com.cowave.commons.framework.access.security.AuthMode.ACCESS_REFRESH;
+
 /**
  *
  * @author shanhuiming
@@ -25,7 +28,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AccessUserDetailsServiceImpl implements UserDetailsService {
 
-    private final String mode;
+    private final AuthMode authMode;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -58,10 +61,10 @@ public class AccessUserDetailsServiceImpl implements UserDetailsService {
         accessUserDetails.setClusterId(applicationProperties.getClusterId());
         accessUserDetails.setClusterLevel(applicationProperties.getClusterLevel());
         accessUserDetails.setClusterName(applicationProperties.getClusterName());
-        if ("accessToken".equals(mode)) {
-            bearerTokenService.simpleAssignToken(accessUserDetails);
-        } else if ("refreshToken".equals(mode)) {
-            bearerTokenService.dualAssignToken(accessUserDetails);
+        if (ACCESS == authMode) {
+            bearerTokenService.assignAccessToken(accessUserDetails);
+        } else if (ACCESS_REFRESH == authMode) {
+            bearerTokenService.assignAccessRefreshToken(accessUserDetails);
         }
         return accessUserDetails;
     }

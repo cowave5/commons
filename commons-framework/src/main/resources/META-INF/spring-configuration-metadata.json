@@ -1265,39 +1265,15 @@
       "defaultValue": "access@cowave.com"
     },
     {
-      "name": "spring.access.auth.access-token-ignores",
+      "name": "spring.access.auth.auth-urls",
       "type": "java.lang.String[]",
-      "description": "accessToken忽略的url",
-      "sourceType": "com.cowave.commons.framework.access.AccessProperties$AuthConfig"
-    },
-    {
-      "name": "spring.access.auth.access-token-urls",
-      "type": "java.lang.String[]",
-      "description": "accessToken认证的url",
-      "sourceType": "com.cowave.commons.framework.access.AccessProperties$AuthConfig"
-    },
-    {
-      "name": "spring.access.auth.refresh-token-ignores",
-      "type": "java.lang.String[]",
-      "description": "refreshToken忽略的url",
-      "sourceType": "com.cowave.commons.framework.access.AccessProperties$AuthConfig"
-    },
-    {
-      "name": "spring.access.auth.refresh-token-urls",
-      "type": "java.lang.String[]",
-      "description": "refreshToken认证的url",
-      "sourceType": "com.cowave.commons.framework.access.AccessProperties$AuthConfig"
-    },
-    {
-      "name": "spring.access.auth.basic-ignores",
-      "type": "java.lang.String[]",
-      "description": "basic忽略的url",
+      "description": "认证的url",
       "sourceType": "com.cowave.commons.framework.access.AccessProperties$AuthConfig"
     },
     {
       "name": "spring.access.auth.basic-urls",
       "type": "java.lang.String[]",
-      "description": "basic认证的url",
+      "description": "Token模式中使用basic认证的url",
       "sourceType": "com.cowave.commons.framework.access.AccessProperties$AuthConfig"
     },
     {
@@ -1315,6 +1291,25 @@
       "defaultValue": true
     },
     {
+      "name": "spring.access.auth.enable",
+      "type": "java.lang.Boolean",
+      "description": "是否开启认证",
+      "sourceType": "com.cowave.commons.framework.access.AccessProperties$AuthConfig",
+      "defaultValue": true
+    },
+    {
+      "name": "spring.access.auth.ignore-urls",
+      "type": "java.lang.String[]",
+      "description": "忽略的url",
+      "sourceType": "com.cowave.commons.framework.access.AccessProperties$AuthConfig"
+    },
+    {
+      "name": "spring.access.auth.mode",
+      "type": "com.cowave.commons.framework.access.security.AuthMode",
+      "description": "认证方式：（basic、access、access-refresh）",
+      "sourceType": "com.cowave.commons.framework.access.AccessProperties$AuthConfig"
+    },
+    {
       "name": "spring.access.auth.refresh-expire",
       "type": "java.lang.Integer",
       "description": "refreshToken超时",
@@ -1329,18 +1324,6 @@
       "defaultValue": "refresh@cowave.com"
     },
     {
-      "name": "spring.access.auth.token-auth-urls",
-      "type": "java.lang.String[]",
-      "description": "token认证的url",
-      "sourceType": "com.cowave.commons.framework.access.AccessProperties$AuthConfig"
-    },
-    {
-      "name": "spring.access.auth.token-ignore-urls",
-      "type": "java.lang.String[]",
-      "description": "token忽略的url",
-      "sourceType": "com.cowave.commons.framework.access.AccessProperties$AuthConfig"
-    },
-    {
       "name": "spring.access.auth.token-key",
       "type": "java.lang.String",
       "description": "Token保存的key",
@@ -1352,11 +1335,7 @@
       "type": "java.lang.String",
       "description": "Token保存方式（header、cookie）",
       "sourceType": "com.cowave.commons.framework.access.AccessProperties$AuthConfig",
-      "defaultValue": "header",
-      "enum": [
-        "header",
-        "cookie"
-      ]
+      "defaultValue": "header"
     },
     {
       "name": "spring.access.auth.users",
@@ -1399,7 +1378,7 @@
       "defaultValue": "*"
     },
     {
-      "name": "spring.access.url-patterns",
+      "name": "spring.access.filter",
       "type": "java.lang.String[]",
       "description": "AccessFilter拦截的url",
       "sourceType": "com.cowave.commons.framework.access.AccessProperties",
@@ -1438,12 +1417,6 @@
       "name": "spring.application.name",
       "type": "java.lang.String",
       "description": "应用名称",
-      "sourceType": "com.cowave.commons.framework.configuration.ApplicationProperties"
-    },
-    {
-      "name": "spring.application.namespace",
-      "type": "java.lang.String",
-      "description": "命名空间 Redis缓存",
       "sourceType": "com.cowave.commons.framework.configuration.ApplicationProperties"
     },
     {

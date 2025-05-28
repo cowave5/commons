@@ -89,8 +89,8 @@ public class RedissonLockHelper {
 
     private String key(String name, String... keys) {
         if(keys != null && keys.length > 0){
-            return applicationProperties.getLockNamespace() + name + ":" + String.join(":", keys);
+            return applicationProperties.getName() + ":lock:" + name + ":" + String.join(":", keys);
         }
-        return applicationProperties.getLockNamespace() + name;
+        return applicationProperties.getName() + ":lock:" + name;
     }
 }

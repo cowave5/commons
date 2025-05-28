@@ -174,18 +174,6 @@ public class Access {
         return Optional.ofNullable(get()).map(access -> access.userDetails).orElse(null);
     }
 
-    public static String tokenType() {
-        return Optional.ofNullable(userDetails()).map(AccessUserDetails::getType).orElse(null);
-    }
-
-    public static String accessToken() {
-        return Optional.ofNullable(userDetails()).map(AccessUserDetails::getAccessToken).orElse(null);
-    }
-
-    public static String refreshToken() {
-        return Optional.ofNullable(userDetails()).map(AccessUserDetails::getRefreshToken).orElse(null);
-    }
-
     public static AccessInfo accessInfo(){
         return new AccessInfo(userDetails());
     }

@@ -12,7 +12,6 @@ package com.cowave.commons.framework.helper.redis.dict;
 import java.util.*;
 
 import com.cowave.commons.client.http.asserts.HttpHintException;
-import com.cowave.commons.framework.configuration.ApplicationProperties;
 import com.cowave.commons.framework.helper.redis.RedisHelper;
 import com.cowave.commons.framework.helper.redis.StringRedisHelper;
 import org.apache.commons.lang3.StringUtils;
@@ -29,43 +28,49 @@ import static com.cowave.commons.client.http.constants.HttpCode.BAD_REQUEST;
 @RequiredArgsConstructor
 public class DictHelper {
 
-    private final ApplicationProperties applicationProperties;
-
     private final RedisHelper redisHelper;
 
     private final StringRedisHelper stringRedisHelper;
 
-    private String getGroupKey(){
-        return applicationProperties.getDictNamespace() + "group:";
+    private String getGroupKey(String... prefixes) {
+        String prefix = "";
+        if (prefixes != null && prefixes.length > 0) {
+            prefix = String.join(":", prefixes) + ":";
+        }
+        return prefix + "dict:group:";
     }
 
-    private String getTypeKey(){
-        return applicationProperties.getDictNamespace() + "type:";
+    private String getTypeKey(String... prefixes){
+        String prefix = "";
+        if (prefixes != null && prefixes.length > 0) {
+            prefix = String.join(":", prefixes) + ":";
+        }
+        return prefix + "dict:type:";
     }
 
-    private String getDictKey(){
-        return applicationProperties.getDictNamespace() + "code:";
+    private String getDictKey(String... prefixes){
+        String prefix = "";
+        if (prefixes != null && prefixes.length > 0) {
+            prefix = String.join(":", prefixes) + ":";
+        }
+        return prefix + "dict:code:";
     }
 
     /**
      * 清空字典
      */
-    public void clear() {
-        String namespace = applicationProperties.getNamespace();
-        if(StringUtils.isBlank(namespace)){
-            namespace = "dict:*:";
-        }else if(namespace.endsWith(":")){
-            namespace = namespace + "dict:*";
-        }else{
-            namespace = namespace + ":dict:*";
+    public void clear(String... prefixes) {
+        String prefix = "";
+        if (prefixes != null && prefixes.length > 0) {
+            prefix = String.join(":", prefixes) + ":";
         }
-        stringRedisHelper.luaClean(namespace);
+        stringRedisHelper.luaClean(prefix + "dict:*");
     }
 
     /**
      * 存入字典缓存
      */
-    public void put(Dict dict) {
+    public void put(Dict dict, String... prefixes) {
         if(dict.getGroupCode() == null){
             throw new HttpHintException(BAD_REQUEST, "{frame.dict.notnull.groupcode}");
         }
@@ -80,22 +85,22 @@ public class DictHelper {
         dict.setDictValue(dictValue);
 
         if(!"root".equals(dict.getTypeCode())){
-            redisHelper.putMap(getGroupKey() + dict.getGroupCode(), dict.getDictCode(), dict);
+            redisHelper.putMap(getGroupKey(prefixes) + dict.getGroupCode(), dict.getDictCode(), dict);
             if(!"root".equals(dict.getGroupCode())){
-                redisHelper.putMap(getTypeKey() + dict.getTypeCode(), dict.getDictCode(), dict);
+                redisHelper.putMap(getTypeKey(prefixes) + dict.getTypeCode(), dict.getDictCode(), dict);
             }
         }
-        redisHelper.putValue(getDictKey() + dict.getDictCode(), dict);
+        redisHelper.putValue(getDictKey(prefixes) + dict.getDictCode(), dict);
     }
 
     /**
      * 获取某个分组字典
      */
-    public <T extends Dict> List<T> getGroup(String groupCode) {
+    public <T extends Dict> List<T> getGroup(String groupCode, String... prefixes) {
         if(StringUtils.isBlank(groupCode)){
             return new ArrayList<>();
         }
-        Map<String, T> map = redisHelper.getMap(getGroupKey() + groupCode);
+        Map<String, T> map = redisHelper.getMap(getGroupKey(prefixes) + groupCode);
         List<T> list = new ArrayList<>(map.values());
         list.sort(Comparator.comparingInt(Dict::getDictOrder));
         return list;
@@ -104,11 +109,11 @@ public class DictHelper {
     /**
      * 获取某个类型字典
      */
-    public <T extends Dict> List<T> getType(String typeCode) {
+    public <T extends Dict> List<T> getType(String typeCode, String... prefixes) {
         if(StringUtils.isBlank(typeCode)){
             return new ArrayList<>();
         }
-        Map<String, T> map = redisHelper.getMap(getTypeKey() + typeCode);
+        Map<String, T> map = redisHelper.getMap(getTypeKey(prefixes) + typeCode);
         List<T> list = new ArrayList<>(map.values());
         list.sort(Comparator.comparingInt(Dict::getDictOrder));
         return list;
@@ -117,11 +122,11 @@ public class DictHelper {
     /**
      * 获取字典
      */
-    public <T extends Dict> T getDict(String dictCode) {
+    public <T extends Dict> T getDict(String dictCode, String... prefixes) {
         if(StringUtils.isBlank(dictCode)){
             return null;
         }
-        return redisHelper.getValue(getDictKey() + dictCode);
+        return redisHelper.getValue(getDictKey(prefixes) + dictCode);
     }
 
     /**
@@ -149,17 +154,17 @@ public class DictHelper {
     /**
      * 删除字典
      */
-    public void removeDict(String dictCode) {
+    public void removeDict(String dictCode, String... prefixes) {
         if(StringUtils.isBlank(dictCode)){
             return;
         }
-        Dict dict = redisHelper.getValue(getDictKey() + dictCode);
+        Dict dict = redisHelper.getValue(getDictKey(prefixes) + dictCode);
         if(dict == null){
             return;
         }
-        redisHelper.delete(getDictKey() + dictCode);
-        redisHelper.removeFromMap(getTypeKey() + dict.getTypeCode(), dictCode);
-        redisHelper.removeFromMap(getGroupKey() + dict.getGroupCode(), dictCode);
+        redisHelper.delete(getDictKey(prefixes) + dictCode);
+        redisHelper.removeFromMap(getTypeKey(prefixes) + dict.getTypeCode(), dictCode);
+        redisHelper.removeFromMap(getGroupKey(prefixes) + dict.getGroupCode(), dictCode);
     }
 
     /**
@@ -171,17 +176,17 @@ public class DictHelper {
      * <p>删除sys-dict:type:{typeCode}
      * <p>从sys-dict:group:group中删除类型
      */
-    public void removeType(String typeCode) {
+    public void removeType(String typeCode, String... prefixes) {
         if(StringUtils.isBlank(typeCode)){
             return;
         }
-        Map<String, Dict> dictMap = redisHelper.getMap(getTypeKey() + typeCode);
+        Map<String, Dict> dictMap = redisHelper.getMap(getTypeKey(prefixes) + typeCode);
         for (Dict dict : dictMap.values()) {
-            redisHelper.delete(getDictKey() + dict.getDictCode());
-            redisHelper.removeFromMap(getGroupKey() + dict.getGroupCode(), dict.getDictCode());
+            redisHelper.delete(getDictKey(prefixes) + dict.getDictCode());
+            redisHelper.removeFromMap(getGroupKey(prefixes) + dict.getGroupCode(), dict.getDictCode());
         }
-        redisHelper.delete(getTypeKey() + typeCode);
-        redisHelper.removeFromMap(getGroupKey() + "group", typeCode);
+        redisHelper.delete(getTypeKey(prefixes) + typeCode);
+        redisHelper.removeFromMap(getGroupKey(prefixes) + "group", typeCode);
     }
 
     /**
@@ -195,21 +200,21 @@ public class DictHelper {
      * <p>删除sys-dict:group:{groupCode}
      * <p>从sys-dict:group:root中删除分组
      */
-    public void removeGroup(String groupCode) {
+    public void removeGroup(String groupCode, String... prefixes) {
         if(StringUtils.isBlank(groupCode)){
             return;
         }
-        Map<String, Dict> typeMap = redisHelper.getMap(getTypeKey() + groupCode);
-        redisHelper.delete(getTypeKey() + groupCode);
+        Map<String, Dict> typeMap = redisHelper.getMap(getTypeKey(prefixes) + groupCode);
+        redisHelper.delete(getTypeKey(prefixes) + groupCode);
         for (Dict type : typeMap.values()) {
-            redisHelper.removeFromMap(getGroupKey() + "group", type.getDictCode());
+            redisHelper.removeFromMap(getGroupKey(prefixes) + "group", type.getDictCode());
         }
 
-        Map<String, Dict> dictMap = redisHelper.getMap(getGroupKey() + groupCode);
+        Map<String, Dict> dictMap = redisHelper.getMap(getGroupKey(prefixes) + groupCode);
         for (Dict dict : dictMap.values()) {
-            redisHelper.delete(getDictKey() + dict.getDictCode());
+            redisHelper.delete(getDictKey(prefixes) + dict.getDictCode());
         }
-        redisHelper.delete(getGroupKey() + groupCode);
-        redisHelper.removeFromMap(getGroupKey() + "root", groupCode);
+        redisHelper.delete(getGroupKey(prefixes) + groupCode);
+        redisHelper.removeFromMap(getGroupKey(prefixes) + "root", groupCode);
     }
 }

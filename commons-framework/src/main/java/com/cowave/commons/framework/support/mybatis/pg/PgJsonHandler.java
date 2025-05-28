@@ -7,11 +7,10 @@
  *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
-package com.cowave.commons.framework.support.mybatis;
+package com.cowave.commons.framework.support.mybatis.pg;
 
 import java.sql.*;
 
-import com.cowave.commons.tools.SpringContext;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.postgresql.util.PGobject;
@@ -19,52 +18,43 @@ import org.postgresql.util.PGobject;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 
-
 /**
  *
  * @author shanhuiming
  *
  */
-public class JsonTypeHandler<T> extends BaseTypeHandler<T> {
+public class PgJsonHandler<T> extends BaseTypeHandler<T> {
 
     private final Class<T> clazz;
 
-    public JsonTypeHandler(Class<T> clazz) {
-        if (clazz == null) {
-            throw new IllegalArgumentException("Type argument cannot be null");
-        }
+    public PgJsonHandler(Class<T> clazz) {
         this.clazz = clazz;
     }
 
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType) throws SQLException {
-        DatabaseProvider dynamic = SpringContext.getBean("databaseIdProvider");
-        if("postgres".equals(dynamic.getCurrentDatabase())){
-            PGobject pgObject = new PGobject();
-            pgObject.setType("json");
-            pgObject.setValue(this.toJson(parameter));
-            ps.setObject(i, pgObject);
-        }else{
-            ps.setObject(i, this.toJson(parameter));
-        }
+        PGobject pgObject = new PGobject();
+        pgObject.setType("json");
+        pgObject.setValue(this.toJson(parameter));
+        ps.setObject(i, pgObject);
     }
 
     @Override
     public T getNullableResult(ResultSet rs, String columnName) throws SQLException {
-        return this.toObject(rs.getString(columnName), clazz);
+        return this.toObject(rs.getString(columnName));
     }
 
     @Override
     public T getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
-        return this.toObject(rs.getString(columnIndex), clazz);
+        return this.toObject(rs.getString(columnIndex));
     }
 
     @Override
     public T getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
-        return this.toObject(cs.getString(columnIndex), clazz);
+        return this.toObject(cs.getString(columnIndex));
     }
 
-    private String toJson(T object) {
+    private String toJson(Object object) {
         try {
             return JSON.toJSONString(object, SerializerFeature.WriteNullListAsEmpty);
         } catch (Exception e) {
@@ -72,14 +62,13 @@ public class JsonTypeHandler<T> extends BaseTypeHandler<T> {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private T toObject(String content, Class<?> clazz) {
+    private T toObject(String content) {
         if (content != null && !content.isEmpty()) {
             try {
-                return (T) JSON.parseObject(content,clazz);
+                return JSON.parseObject(content, clazz);
             } catch (Exception e) {
-                content = content.substring(1, content.length()-1).replace("\\\"", "\"");
-                return (T) JSON.parseObject(content,clazz);
+                content = content.substring(1, content.length() - 1).replace("\\\"", "\"");
+                return JSON.parseObject(content, clazz);
             }
         } else {
             return null;

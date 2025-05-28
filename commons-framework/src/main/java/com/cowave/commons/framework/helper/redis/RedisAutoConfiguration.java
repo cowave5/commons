@@ -76,8 +76,7 @@ public class RedisAutoConfiguration {
 
     @ConditionalOnBean(name = "commonRedisConnectionFactory")
     @Bean
-    public RedisTemplate<Object, Object> commonRedisTemplate(
-            @Qualifier("commonRedisConnectionFactory") RedisConnectionFactory redisConnectionFactory){
+    public RedisTemplate<Object, Object> commonRedisTemplate(@Qualifier("commonRedisConnectionFactory") RedisConnectionFactory redisConnectionFactory){
         RedisTemplate<Object, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
         // key-value的序列化

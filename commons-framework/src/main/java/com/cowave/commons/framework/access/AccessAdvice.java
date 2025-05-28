@@ -90,12 +90,12 @@ public class AccessAdvice {
 
     @ExceptionHandler(BadCredentialsException.class)
     public HttpResponse<Response<Void>> handleBadCredentialsException(BadCredentialsException e) {
-        return error(e, UNAUTHORIZED.getStatus(), UNAUTHORIZED.getCode(), ERR_LEVEL_0, I18Messages.msg("frame.auth.failed.passwd"));
+        return error(e, UNAUTHORIZED.getStatus(), UNAUTHORIZED.getCode(), ERR_LEVEL_0, I18Messages.msg("frame.auth.passwd"));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public HttpResponse<Response<Void>> handleAccessDeniedException(AccessDeniedException e) {
-        return error(e, FORBIDDEN.getStatus(), FORBIDDEN.getCode(), ERR_LEVEL_0, I18Messages.msg("frame.auth.denied"));
+        return error(e, FORBIDDEN.getStatus(), FORBIDDEN.getCode(), ERR_LEVEL_0, I18Messages.msg("frame.auth.permit"));
     }
 
     @ExceptionHandler(HttpHintException.class)

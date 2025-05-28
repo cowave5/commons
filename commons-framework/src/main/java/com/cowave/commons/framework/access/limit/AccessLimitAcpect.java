@@ -72,7 +72,7 @@ public class AccessLimitAcpect {
         // url
         assert httpServletRequest != null;
         String accessUrl = httpServletRequest.getRequestURI();
-        String limitKey = applicationProperties.getLimitNamespace() + accessUrl;
+        String limitKey = applicationProperties.getName() + ":limit:" + accessUrl;
         // ip
         if(accessLimit.limitWithIp()){
             String accessIp = ServletUtils.getRequestIp(httpServletRequest);

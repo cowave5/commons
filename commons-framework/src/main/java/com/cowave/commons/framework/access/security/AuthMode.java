@@ -7,49 +7,40 @@
  *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
-package com.cowave.commons.framework.configuration;
+package com.cowave.commons.framework.access.security;
 
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
-import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
  *
  * @author shanhuiming
  *
  */
-@Data
-@ConfigurationProperties(prefix = "spring.application")
-public class ApplicationProperties {
+public enum AuthMode {
 
     /**
-     * 应用名称
+     * Basic认证
      */
-    private String name;
+    BASIC("basic"),
 
     /**
-     * 应用版本
+     * Access Token认证
      */
-    private String version;
+    ACCESS("access"),
 
     /**
-     * 集群id
+     * Access-Refresh Token认证
      */
-    private int clusterId = 10;
+    ACCESS_REFRESH("access-refresh");
 
-    /**
-     * 集群等级
-     */
-    private int clusterLevel = 1;
+    private final String value;
 
-    /**
-     * 集群名称
-     */
-    private String clusterName = "default";
+    AuthMode(String value) {
+        this.value = value;
+    }
 
-    /**
-     * 集群属性
-     */
-    private Map<String, Object> clusterProperties;
+    @JsonValue
+    public String getValue() {
+        return value;
+    }
 }
