@@ -16,13 +16,26 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 
 /**
- *
  * @author shanhuiming
- *
  */
 @NoArgsConstructor
 @Data
 public class AccessTokenInfo {
+
+    /**
+     * 令牌id
+     */
+    private String accessId;
+
+    /**
+     * Refresh Token id
+     */
+    private String refreshId;
+
+    /**
+     * 令牌类型
+     */
+    private String accessType;
 
     /**
      * 用户账号
@@ -33,16 +46,6 @@ public class AccessTokenInfo {
      * 用户名称
      */
     private String userName;
-
-    /**
-     * 令牌类型
-     */
-    private String accessType;
-
-    /**
-     * 令牌id
-     */
-    private String accessId;
 
     /**
      * 访问IP
@@ -71,11 +74,12 @@ public class AccessTokenInfo {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Shanghai")
     private Date loginTime;
 
-    public AccessTokenInfo(AccessUserDetails accessUserDetails){
+    public AccessTokenInfo(AccessUserDetails accessUserDetails) {
+        this.accessId = accessUserDetails.getAccessId();
+        this.refreshId = accessUserDetails.getRefreshId();
+        this.accessType = accessUserDetails.getAuthType();
         this.userAccount = accessUserDetails.getUsername();
         this.userName = accessUserDetails.getUserNick();
-        this.accessType = accessUserDetails.getAuthType();
-        this.accessId = accessUserDetails.getAccessId();
         this.accessIp = accessUserDetails.getAccessIp();
         this.accessTime = accessUserDetails.getAccessTime();
         this.loginIp = accessUserDetails.getLoginIp();

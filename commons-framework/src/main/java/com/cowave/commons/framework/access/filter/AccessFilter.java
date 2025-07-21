@@ -151,11 +151,12 @@ public class AccessFilter implements Filter {
         String json = new String(Base64.getUrlDecoder().decode(userPayload));
         try {
             Map<String, Object> claims = objectMapper.readValue(json, Map.class);
-
             AccessUserDetails userDetails = new AccessUserDetails();
             userDetails.setAuthType((String) claims.get(CLAIM_TYPE));
             userDetails.setAccessId((String) claims.get(CLAIM_ACCESS_ID));
             userDetails.setRefreshId((String) claims.get(CLAIM_REFRESH_ID));
+            // tenant
+            userDetails.setTenantId((String) claims.get(CLAIM_TENANT_ID));
             // user
             userDetails.setUserId(claims.get(CLAIM_USER_ID));
             userDetails.setUserCode(claims.get(CLAIM_USER_CODE));

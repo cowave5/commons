@@ -9,6 +9,7 @@
  */
 package com.cowave.commons.framework.access.security;
 
+import cn.hutool.core.util.IdUtil;
 import com.cowave.commons.framework.configuration.ApplicationProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -45,6 +46,8 @@ public class AccessUserDetailsServiceImpl implements TenantUserDetailsService {
         }
 
         AccessUserDetails accessUserDetails = AccessUserDetails.newUserDetails();
+        accessUserDetails.setAccessId(IdUtil.fastSimpleUUID());
+        accessUserDetails.setRefreshId(IdUtil.fastSimpleUUID());
         accessUserDetails.setAuthType("default");
         accessUserDetails.setUserId(accessUser.getUserId());
         accessUserDetails.setUserCode(accessUser.getUserCode());

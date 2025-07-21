@@ -92,6 +92,11 @@ public class AccessUserDetails implements UserDetails {
     private String tenantId;
 
     /**
+     * 租户首页
+     */
+    private String tenantIndex;
+
+    /**
      * 用户id
      */
     private Object userId;

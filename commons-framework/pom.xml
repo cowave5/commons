@@ -88,8 +88,9 @@
             <artifactId>commons-tools</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-context</artifactId>
+            <version>3.1.5</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

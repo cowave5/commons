@@ -182,25 +182,6 @@ public class Collections {
     /**
      * 复制集合 -> 新类型的List
      */
-    public static <F, T> List<T> copyToList(Collection<F> collection, Class<T> clazz, BiConsumer<F, T> biConsumer) {
-        if (collection == null) {
-            return new ArrayList<>();
-        }
-        return collection.stream().map(c -> {
-            T to;
-            try {
-                to = clazz.getDeclaredConstructor().newInstance();
-                biConsumer.accept(c, to);
-            } catch (Exception e) {
-                throw new UnsupportedOperationException(e);
-            }
-            return to;
-        }).collect(Collectors.toCollection(ArrayList::new));
-    }
-
-    /**
-     * 复制集合 -> 新类型的List
-     */
     public static <F, T> List<T> flatToList(Collection<F> collection, Function<F, Stream<T>> mapper) {
         if (CollectionUtils.isEmpty(collection)) {
             return new ArrayList<>();
@@ -216,6 +197,25 @@ public class Collections {
             return new ArrayList<>();
         }
         return collection.stream().filter(filter).flatMap(mapper).collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    /**
+     * 复制集合 -> 新类型的List
+     */
+    public static <F, T> List<T> copyToList(Collection<F> collection, Class<T> clazz, BiConsumer<F, T> biConsumer) {
+        if (collection == null) {
+            return new ArrayList<>();
+        }
+        return collection.stream().map(c -> {
+            T to;
+            try {
+                to = clazz.getDeclaredConstructor().newInstance();
+                biConsumer.accept(c, to);
+            } catch (Exception e) {
+                throw new UnsupportedOperationException(e);
+            }
+            return to;
+        }).collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**

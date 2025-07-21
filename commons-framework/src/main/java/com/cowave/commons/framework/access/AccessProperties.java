@@ -13,6 +13,8 @@ import com.cowave.commons.framework.access.security.AccessUser;
 import com.cowave.commons.framework.access.security.AuthMode;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +27,8 @@ import static com.cowave.commons.framework.access.security.AuthMode.BASIC;
  *
  */
 @Data
+@RefreshScope
+@Component
 @ConfigurationProperties("spring.access")
 public class AccessProperties {
 
