@@ -263,8 +263,6 @@ public class AccessUserDetails implements UserDetails {
         this.permissions = refreshTokenInfo.getPermissions();
         this.loginIp = refreshTokenInfo.getLoginIp();
         this.loginTime = refreshTokenInfo.getLoginTime();
-        this.accessIp = refreshTokenInfo.getAccessIp();
-        this.accessTime = refreshTokenInfo.getAccessTime();
     }
 
     public <T> T getUserId(){

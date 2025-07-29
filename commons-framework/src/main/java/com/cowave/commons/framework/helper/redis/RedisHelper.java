@@ -143,6 +143,16 @@ public class RedisHelper{
         return IntStream.range(0, keys.size()).boxed().collect(Collectors.toMap(keys::get, results::get));
     }
 
+    public <T> List<T> pipeline(List<java.util.function.Consumer<RedisOperations<String, Object>>> operationList) {
+        return redisTemplate.executePipelined(new SessionCallback<>() {
+            @Override
+            public Object execute(@NotNull RedisOperations redisOperations) {
+                operationList.forEach(consumer -> consumer.accept(redisOperations));
+                return null;
+            }
+        });
+    }
+
     /* ******************************************
      * opsForValue
      * ******************************************/

@@ -11,7 +11,6 @@ package com.cowave.commons.framework.access.security;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -152,12 +151,12 @@ public interface BearerTokenService {
     /**
      * 注销AccessToken
      */
-    AccessTokenInfo revokeAccessToken(String tenantId, String accessId);
+    AccessTokenInfo revokeAccessToken(String tenantId, String authType, String userAccount, String accessId);
 
     /**
-     * 注销AccessToken和RefreshToken
+     * 注销RefreshToken
      */
-    RefreshTokenInfo revokeAccessRefreshToken();
+    RefreshTokenInfo revokeRefreshToken(String tenantId, String authType, String userAccount);
 
     /**
      * 验证AccessToken
@@ -165,7 +164,12 @@ public interface BearerTokenService {
     boolean validAccessToken(String accessToken);
 
     /**
-     * 保存的AccessToken信息
+     * 获取AccessToken列表
      */
-    List<AccessTokenInfo> listAccessToken(String tenantId, String userAccount, Date beginTime, Date endTime);
+    List<AccessTokenInfo> listAccessToken(String tenantId);
+
+    /**
+     * 获取RefreshTokenInfo列表
+     */
+    List<RefreshTokenInfo> listRefreshToken(String tenantId);
 }

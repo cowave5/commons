@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolationException;
 import java.beans.PropertyEditorSupport;
 import java.sql.SQLException;
@@ -221,6 +222,11 @@ public class AccessAdvice {
             }
         }else if(errLevel >= ERR_LEVEL_1 && e.getMessage() != null){
             response.setCause(List.of(e.getMessage()));
+        }
+
+        HttpServletResponse servletResponse = Access.httpResponse();
+        if(servletResponse.isCommitted()) {
+            return null;
         }
 
         // HttpResponse

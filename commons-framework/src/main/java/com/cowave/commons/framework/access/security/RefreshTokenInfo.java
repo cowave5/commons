@@ -122,17 +122,6 @@ public class RefreshTokenInfo {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Shanghai")
     private Date loginTime;
 
-    /**
-     * 访问ip
-     */
-    private String accessIp;
-
-    /**
-     * 访问时间
-     */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Shanghai")
-    private Date accessTime;
-
     public RefreshTokenInfo(AccessUserDetails accessUserDetails){
         this.accessId = accessUserDetails.getAccessId();
         this.refreshId = accessUserDetails.getRefreshId();
@@ -153,7 +142,5 @@ public class RefreshTokenInfo {
         this.permissions = accessUserDetails.getPermissions();
         this.loginIp = accessUserDetails.getLoginIp();
         this.loginTime = accessUserDetails.getLoginTime();
-        this.accessIp = accessUserDetails.getAccessIp();
-        this.accessTime = accessUserDetails.getAccessTime();
     }
 }

@@ -164,6 +164,16 @@ public class StringRedisHelper {
         return IntStream.range(0, keys.size()).boxed().collect(Collectors.toMap(keys::get, results::get));
     }
 
+    public List<Object> pipeline(List<java.util.function.Consumer<RedisOperations<String, Object>>> operationList) {
+        return stringRedisTemplate.executePipelined(new SessionCallback<>() {
+            @Override
+            public Object execute(@NotNull RedisOperations redisOperations) {
+                operationList.forEach(consumer -> consumer.accept(redisOperations));
+                return null;
+            }
+        });
+    }
+
     public void luaClean(String pattern){
         DefaultRedisScript<Void> luaScript = new DefaultRedisScript<>();
         luaScript.setScriptText(LUA_CLEAN);
