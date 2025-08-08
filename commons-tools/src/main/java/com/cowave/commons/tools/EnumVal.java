@@ -32,7 +32,7 @@ public interface EnumVal<T> {
         try {
             Method method = clazz.getMethod("values");
             EnumVal<T>[] enums = (EnumVal<T>[]) method.invoke(null);
-            return Collections.arrayToList(enums, EnumVal::val);
+            return Collections.arrayToList(enums, EnumVal::getVal);
         } catch (Exception e) {
             throw new UnsupportedOperationException(clazz + " isn't a enum");
         }
@@ -46,14 +46,14 @@ public interface EnumVal<T> {
     }
 
     default boolean equalsVal(T val) {
-        return Objects.equals(this.val(), val);
+        return Objects.equals(this.getVal(), val);
     }
 
-    default T val(){
+    default T getVal(){
         return null;
     }
 
-    default String desc(){
+    default String getDesc(){
         return "";
     }
 }
